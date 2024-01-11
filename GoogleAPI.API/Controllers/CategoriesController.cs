@@ -1,134 +1,140 @@
-﻿using Antlr.Runtime.Tree;
-using GoogleAPI.Domain.Models.NEBIM.Category;
-using GoogleAPI.Persistance.Contexts;
-using Microsoft.AspNetCore.Http;
+// MainCategorysController.cs
+
+using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Models.Category;
+using GoogleAPI.Domain.Models.Category.Dto;
+using GoogleAPI.Domain.Models.Category.ViewModel;
+using GooleAPI.Application.Abstractions.IServices.ICategory;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GoogleAPI.API.Controllers
 {
-    [Route("api/Categories")]
+    [Route("api/categories")]
     [ApiController]
-    public class CategoriesController : ControllerBase
+    //[Authorize(AuthenticationSchemes ="Admin")]
+    public class MainCategorysController : ControllerBase
     {
-        private readonly GooleAPIDbContext _context;
-        private readonly string ErrorTextBase = "İstek Sırasında Hata Oluştu: ";
-        public CategoriesController(
-           GooleAPIDbContext context
-        )
-        {
+        private readonly ICategoryService _categoryService;
 
-            _context = context;
+        public MainCategorysController(ICategoryService categoryService)
+        {
+            _categoryService = categoryService;
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetCategories( )
-        //{
-        //    try
-        //    {
-        //        List<CategoryModel> saleOrderModel = await _context.ztCategories.FromSqlRaw("exec usp_GetCategories").ToListAsync();
 
-        //        return Ok(saleOrderModel);
-        //    }
-        //    catch (Exception ex)
-        //    {
+        [HttpGet("get-main-category")]
+        public async Task<ActionResult<IEnumerable<MainCategory_VM>>> GetMainCategorys(int id)
+        {
+            try
+            {
+                List<MainCategory_VM> mainCategories = await _categoryService.GetMainCategories(id);
+                return mainCategories;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //        return BadRequest(ErrorTextBase + ex.Message);
-        //    }
 
-        //}
+        [HttpGet("get-sub-category")]
+        public async Task<ActionResult<IEnumerable<SubCategory_VM>>> GetSubCategorys(int id)
+        {
+            try
+            {
+                List<SubCategory_VM> subCategories = await _categoryService.GetSubCategories(id);
+                return subCategories;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetCategoriesById(int id)
-        //{
-        //    try
-        //    {
-        //        CategoryModel saleOrderModel = _context.ztCategories.First(o => o.Id == id);
-        //        if (saleOrderModel == null)
-        //        {
-        //            return NotFound();
-        //        }
 
-        //        return Ok(saleOrderModel);
-        //    }
-        //    catch (Exception ex)
-        //    {
 
-        //        return BadRequest(ErrorTextBase + ex.Message);
-        //    }
+        [HttpGet("get-all-categories")]
+        public async Task<ActionResult<IEnumerable<CategoriesList_VM>>> GetAllCategories(int id)
+        {
+            try
+            {
+                List<CategoriesList_VM> categories = await _categoryService.GetAllCategories(id);
+                return categories;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //}
+        [HttpPost("add")]
+        public async Task<ActionResult<Category>> AddCategory(CategoryAdd_DTO model)
+        {
+            try
+            {
+                bool response = await _categoryService.AddCategory(model);
 
-        //[HttpPost()]
-        //public async Task<IActionResult> AddCategory(CategoryModel model)
-        //{
-        //    try
-        //    {
+                if (response)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return BadRequest("MainCategory could not be added.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //        var addedEntity = _context.Entry(model);
+        [HttpPost("UpdateCategoryVisibleOption")]
+        public async Task<ActionResult<bool>> UpdateCategoryVisibleOption(UpdateCategoryVisibleOptionsCommandModel model)
+        {
+            try
+            {
+                bool response = await _categoryService.UpdateCategoryVisibleOption(model);
+                if (response)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-        //        addedEntity.State =
-        //            EntityState
-        //            .Added;
-        //        _context.SaveChanges();
+        }
 
-        //        return Ok(model);
-        //    }
-        //    catch (Exception ex)
-        //    {
 
-        //        return BadRequest(ErrorTextBase + ex.Message);
-        //    }
-        //}
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            try
+            {
+                bool response = await _categoryService.DeleteCategory(id);
 
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateCategory(int id, CategoryModel model)
-        //{
-        //    try
-        //    {
-        //        var category = _context.ztCategories?.Find(id);
+                if (response)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //        if (category == null)
-        //        {
-        //            return NotFound("İlgili Kategori Databasede Bulunmamaktadır!");
-        //        }
 
-        //        category.Description = model.Description;
-        //        category.TopCategory = model.TopCategory;
-        //        category.SubCategory = model.SubCategory;
-        //        category.SubCategory2 = model.SubCategory2;
-        //        category.SubCategory3 = model.SubCategory3;
-        //        category.SubCategory4 = model.SubCategory4;
-        //        category.SubCategory5 = model.SubCategory5;
 
-        //        _context.SaveChanges();
-
-        //        return Ok(category);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ErrorTextBase + ex.Message);
-        //    }
-        //}
-
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteCategory(int id)
-        //{
-        //    try
-        //    {
-        //        var category = _context.ztCategories?.First(c => c.Id == id);
-        //        if (category == null)
-        //            return NotFound();
-
-        //        _context.ztCategories?.Remove(category);
-        //        _context.SaveChanges();
-
-        //        return Ok();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ErrorTextBase + ex.Message);
-        //    }
-        //}
     }
 }

@@ -1,11 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoogleAPI.Persistance
+﻿namespace GoogleAPI.Persistance
 {
     static class Configuration
     {
@@ -13,13 +6,13 @@ namespace GoogleAPI.Persistance
         {
             get
             {
-                ConfigurationManager configurationManager = new();
-                configurationManager.SetBasePath(
-                    Path.Combine(Directory.GetCurrentDirectory(), "../../GoogleAPI/GoogleAPI.API")
-                );
-                configurationManager.AddJsonFile("appsettings.json");
+                //ConfigurationManager configurationManager = new();
+                //configurationManager.SetBasePath(
+                //    Path.Combine(Directory.GetCurrentDirectory(), "../../Googleapi/GoogleAPI.API")
+                //);
+                //configurationManager.AddJsonFile("appsettings.json");
 
-                return "Data Source=192.168.2.36;Initial Catalog=BDD2017;User ID=sa;Password=8969;TrustServerCertificate=True;";
+                return "Data Source=192.168.2.36;Initial Catalog=MISIGOSHOPAPI;User ID=sa;Password=8969;TrustServerCertificate=True;";
             }
         }
     }

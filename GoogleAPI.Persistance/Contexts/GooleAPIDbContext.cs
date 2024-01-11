@@ -1,13 +1,9 @@
-﻿using GoogleAPI.Domain.Entities.Common;
-using GoogleAPI.Domain.Models.Filter;
-using GoogleAPI.Domain.Models.NEBIM;
-using GoogleAPI.Domain.Models.NEBIM.Category;
-using GoogleAPI.Domain.Models.NEBIM.Customer;
-using GoogleAPI.Domain.Models.NEBIM.Invoice;
-using GoogleAPI.Domain.Models.NEBIM.Order;
-using GoogleAPI.Domain.Models.NEBIM.Product;
-using GoogleAPI.Domain.Models.NEBIM.Shelf;
-using GoogleAPI.Domain.Models.NEBIM.Warehouse;
+﻿using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Entities.Common;
+using GoogleAPI.Domain.Entities.User;
+using GoogleAPI.Domain.Models.Brand.ViewModel;
+using GoogleAPI.Domain.Models.Product.Dto;
+using GoogleAPI.Domain.Models.Product.ViewModel;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -16,117 +12,91 @@ namespace GoogleAPI.Persistance.Contexts
     public class GooleAPIDbContext : DbContext
     {
 
-        public GooleAPIDbContext(DbContextOptions<GooleAPIDbContext> options) : base(options)
-        {
-            Database.SetCommandTimeout(180); // SQL sorguları için zaman aşımı süresini 3 dakika olarak ayarla
-        }
+        public GooleAPIDbContext(DbContextOptions options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+            {
 
-            modelBuilder.Entity<WarehosueOperationListModel>().HasNoKey();
-            modelBuilder.Entity<SaleOrderModel>().HasNoKey();         
-            modelBuilder.Entity<BarcodeModel>().HasNoKey();
-            modelBuilder.Entity<OrderSaleDetailModel>().HasNoKey();
-            modelBuilder.Entity<OrderBillingModel>().HasNoKey();
-            modelBuilder.Entity<ProductOfOrderModel>().HasNoKey();
-            modelBuilder.Entity<OfficeModel>().HasNoKey();
-            modelBuilder.Entity<WarehouseOfficeModel>().HasNoKey();
-            modelBuilder.Entity<WarehosueOperationListModel>().HasNoKey();
-            modelBuilder.Entity<WarehouseOperationDetailModel>().HasNoKey();
-            modelBuilder.Entity<InvoiceNumberModel>().HasNoKey(); 
-            modelBuilder.Entity<RemainingProductsModel>().HasNoKey(); 
-            modelBuilder.Entity<CountProductRequestModel>().HasNoKey();
-            modelBuilder.Entity<ProductCountModel>().HasNoKey();
-            modelBuilder.Entity<ProductCountModel2>().HasNoKey();
-            modelBuilder.Entity<RecepieModel>().HasNoKey();
-            modelBuilder.Entity<CustomerModel>().HasNoKey();
-            modelBuilder.Entity<OrderData>().HasNoKey();
-            modelBuilder.Entity<CreatePurchaseInvoice>().HasNoKey();
-            modelBuilder.Entity<SalesPersonModel>().HasNoKey();
-            modelBuilder.Entity<Domain.Models.NEBIM.Order.Invoice>().HasNoKey();
-            modelBuilder.Entity<CollectedProduct>().HasNoKey();
-            modelBuilder.Entity<CountListModel>().HasNoKey();
-            modelBuilder.Entity<CountedProduct>().HasNoKey();
-            modelBuilder.Entity<CreatePurchaseInvoice>().HasNoKey();
-            modelBuilder.Entity<TransferModel>().HasNoKey();
-            modelBuilder.Entity<TransferData>().HasNoKey();
-            modelBuilder.Entity<CountConfirmData>().HasNoKey();
-            modelBuilder.Entity<WarehouseTransferListFilterModel>().HasNoKey();
-            modelBuilder.Entity<WarehosueTransferListModel>().HasNoKey();
-            modelBuilder.Entity<InvoiceErrorInfoModel>().HasNoKey();
-            modelBuilder.Entity<ProductList_VM>().HasNoKey();
-            modelBuilder.Entity<QrControlModel>().HasNoKey();
-            modelBuilder.Entity<InventoryItemModel>().HasNoKey();
-            modelBuilder.Entity<TransferRequestListModel>().HasNoKey();
-             modelBuilder.Entity<InventoryResponseModel>().HasNoKey();
-            modelBuilder.Entity<AvailableShelf>().HasNoKey();
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (entityType.ClrType.IsSubclassOf(typeof(BaseEntity)))
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property("UpdatedDate")
+                        .HasDefaultValue(DateTime.Now);
+                }
+            }
+            #region products
+            modelBuilder.Entity<ProductCategory>()
+            .HasKey(pp => new { pp.ProductId, pp.CategoryId });
+
+
+            modelBuilder.Entity<ProductPhoto>()
+                 .HasKey(pp => new { pp.ProductId, pp.PhotoId });
+
+            modelBuilder.Entity<Product>().HasOne(p => p.Brand).WithMany(c => c.Products).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Product>().HasOne(p => p.Dimension).WithMany(c => c.Products).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Product>().HasOne(p => p.Color).WithMany(c => c.Products).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<ProductCard_VM>().HasNoKey();
+            modelBuilder.Entity<ProductDetail_DTO>().HasNoKey();
+
+            #endregion
+            #region orders and basket 
+            modelBuilder.Entity<Order>().HasOne(u => u.Basket).WithOne(b => b.Order).IsRequired(false).OnDelete(DeleteBehavior.SetNull); // Silme 
+            modelBuilder.Entity<Order>().HasOne(u => u.ShippingAddress).WithMany(b => b.Orders).IsRequired(false).OnDelete(DeleteBehavior.SetNull); // Silme 
+            modelBuilder.Entity<Order>().HasOne(u => u.BillingAddress).WithMany(b => b.Orders).IsRequired(false).OnDelete(DeleteBehavior.SetNull); // Silme 
+            modelBuilder.Entity<Basket>().HasOne(u => u.User).WithMany(b => b.Baskets).IsRequired(false).OnDelete(DeleteBehavior.SetNull); // Silme 
+            modelBuilder.Entity<BasketItem>().HasOne(u => u.Basket).WithMany(b => b.BasketItems).IsRequired(false).OnDelete(DeleteBehavior.SetNull); // Silme 
+            modelBuilder.Entity<BasketItem>().HasOne(u => u.Product).WithMany(b => b.BasketItems).IsRequired(false).OnDelete(DeleteBehavior.SetNull); // Silme 
+
+            modelBuilder.Entity<ShippingAddress>().HasOne(a => a.User).WithMany(u => u.ShippingAddresses).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+
+            #endregion
+            #region user
+
+            modelBuilder.Entity<User>().HasOne(p => p.Role).WithMany(c => c.Users).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<BillingAddress>().HasOne(u => u.User).WithMany(b => b.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.Restrict); // Silme davranışını özelleştirir
+
+
+            #endregion
+
+
+
+
+
+            // Diğer konfigürasyonlar ve ilişkiler...
+
 
 
         }
-        //
-        //Description
-        public DbSet<AvailableShelf>? AvailableShelfs { get; set; }
+        public DbSet<Menu>? Menus { get; set; }
+        public DbSet<Endpoint>? Endpoints { get; set; }
 
-        public DbSet<TransferRequestListModel>? TransferRequestListModels { get; set; }
-        public DbSet<QrCode>? ztQrCodes { get; set; }
-        public DbSet<Log>? ztLogs { get; set; }
-        public DbSet<ProductList_VM>? ProductListModel { get; set; }
-        public DbSet<InvoiceErrorInfoModel>? InvoiceErrorInfoModel { get; set; }
-        public DbSet<InventoryItemModel>? InventoryItemModels { get; set; }
-        public DbSet<WarehosueTransferListModel>? WarehosueTransferListModel { get; set; }
-        public DbSet<CountConfirmData>? CountConfirmData { get; set; }
-        public DbSet<WarehouseTransferListFilterModel>? WarehouseTransferListFilterModel { get; set; }
+        public DbSet<User>? Users { get; set; }
+        public DbSet<ShippingAddress>? ShippingAddresses { get; set; }
+        public DbSet<Provider>? Providers { get; set; }
+        public DbSet<Order>? Orders { get; set; }
+        public DbSet<Basket>? Baskets { get; set; }
+        public DbSet<BasketItem>? BasketItems { get; set; }
+        public DbSet<ProductPhoto>? ProductPhotos { get; set; }
 
-        public DbSet<ZTMSRAFInvoiceDetailBP>? ZTMSRAFInvoiceDetailBP { get; set; }
-        public DbSet<TransferData>? TransferData { get; set; }
+        public DbSet<ProductCategory>? ProductCategories { get; set; }
+        public DbSet<Role>? Roles { get; set; }
+        public DbSet<BillingAddress>? BillingAddresses { get; set; }
 
-        public DbSet<TransferModel>? TransferModel { get; set; }
+        public DbSet<Menu>? Personals { get; set; }
+        public DbSet<Product>? Products { get; set; }
+        public DbSet<Color>? Colors { get; set; }
+        public DbSet<Brand>? Brands { get; set; }
+        public DbSet<Photo>? Photos { get; set; }
+        public DbSet<Dimension>? Dimensions { get; set; }
+        public DbSet<Category>? Categories { get; set; }
+        //public DbSet<Log>? Logs { get; set; }
 
-        public DbSet<ProductCountModel2>? ztProductCountModel2 { get; set; }
+        public DbSet<ProductVariation_VM>? ProductVariation_VM { get; set; }
+        public DbSet<Brand_VM>? Brand_VM { get; set; }
+        public DbSet<ProductCard_VM>? ProductCard_VM { get; set; }
+        public DbSet<ProductDetail_DTO>? ProductDetail_DTO { get; set; }
 
-        public DbSet<WarehouseFormModel>? WarehouseFormModel { get; set; }
-
-        public DbSet<CreatePurchaseInvoice>? CreatePurchaseInvoices { get; set; }
-        public DbSet<FastTransferModel>? FastTransferModels { get; set; }
-
-        public DbSet<ZTMSRAFSAYIM3>? ZTMSRAFSAYIM3 { get; set; }
-
-        public DbSet<CountListModel>? CountListModels { get; set; }
-        public DbSet<CountedProduct>? CountedProducts { get; set; }
-
-        public DbSet<SalesPersonModel>? SalesPersonModels { get; set; } 
-        public DbSet<CollectedProduct>? CollectedProducts { get; set; }
-        public DbSet<QrControlModel>? QrControlModel { get; set; }
-
-        public DbSet<EInvoiceModel>? ztEInvoiceModel { get; set; } 
-        public DbSet<CreatePurchaseInvoice>? ztCreatePurchaseInvoice { get; set; } 
-
-        public DbSet<OrderData>? ztOrderData { get; set; } 
-
-        public DbSet<RecepieModel>? ztRecepieModel { get; set; } 
-        public DbSet<Domain.Models.NEBIM.Order.Invoice>? ztInvoice { get; set; } 
-        public DbSet<WarehosueOperationListModel>? ztWarehosueOperationListModel { get; set; } 
-        public DbSet<WarehouseOperationDetailModel>? ztWarehosueOperationDetail { get; set; } //
-        public DbSet<OrderBillingModel>? ztOrderBillingModel { get; set; }
-        public DbSet<ProductOfOrderModel>? ztProductOfOrderModel { get; set; }
-
-        public DbSet<SaleOrderModel>? SaleOrderModels { get; set; }
-        public DbSet<ShelfModel>? ztShelves { get; set; }
-
-        public DbSet<CategoryModel>? ztCategories { get; set; }
-        public DbSet<BarcodeAddModel>? ztBarcodeAddModel { get; set; } 
-        public DbSet<BarcodeModel>? BarcodeModels { get; set; }
-        public DbSet<OrderSaleDetailModel>? OrderSaleDetails { get; set; } 
-        public DbSet<OfficeModel>? ztOfficeModel { get; set; }
-        public DbSet<WarehouseOfficeModel>? ztWarehouseModel { get; set; }
-        public DbSet<ReadyToShipmentPackageModel>? ztReadyToShipmentPackageModel { get; set; }
-        public DbSet<InvoiceNumberModel>? ztInvoiceNumberModel { get; set; }
-        public DbSet<RemainingProductsModel>? ztRemainingProductsModel { get; set; }
-        public DbSet<CountProductRequestModel>? ztCountProductRequestModel { get; set; }
-        public DbSet<CustomerModel>? ztCustomerModel { get; set; } //InventoryResponseModel
-        public DbSet<InventoryResponseModel>? InventoryResponseModels { get; set; }
-
-        public DbSet<ProductCountModel>? ztProductCountModel { get; set; } 
 
         public override async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default

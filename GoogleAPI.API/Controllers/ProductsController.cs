@@ -1,140 +1,311 @@
-﻿
-using GoogleAPI.Domain.Models.NEBIM;
-using GoogleAPI.Domain.Models.NEBIM.Product;
-using GoogleAPI.Domain.Models.NEBIM.Shelf;
-using GoogleAPI.Persistance.Concretes;
-using GoogleAPI.Persistance.Contexts;
-using GooleAPI.Application.Abstractions;
+using GoogleAPI.Domain.Models.Category.ViewModel;
+using GoogleAPI.Domain.Models.Product.CommandModel;
+using GoogleAPI.Domain.Models.Product.Dto;
+using GoogleAPI.Domain.Models.Product.ViewModel;
+using GooleAPI.Application.Abstractions.IServices.IProduct;
+using GooleAPI.Application.Consts;
+using GooleAPI.Application.CustomAttributes;
+using GooleAPI.Application.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace GoogleAPI.API.Controllers
 {
-    [Route("api/Products")]
+    [Route("api/products")]
     [ApiController]
+
     public class ProductsController : ControllerBase
     {
-
-        private readonly GooleAPIDbContext _context;
-        private readonly string ErrorTextBase = "İstek Sırasında Hata Oluştu: ";
-        private readonly IOrderService _orderService;
-        private readonly ILogService _ls;
-        private readonly IGeneralService _gs;
-        private readonly IProductService _ps;
-        public ProductsController(
-           GooleAPIDbContext context, IOrderService orderService,ILogService logService,IGeneralService gs,IProductService ps
-        )
+        private readonly IProductService _productService;
+        private readonly ILogger <IProductService> _logger;
+        public ProductsController(IProductService productService,  ILogger<IProductService> logger)
         {
-            _ls = logService;
-            _orderService = orderService;
-            _context = context;
-            _gs = gs;
-            _ps = ps;
+            _productService = productService;
+            _logger = logger;
         }
-        [HttpPost("SearchProduct")]
-        public async Task<IActionResult> SearchProduct(BarcodeSearch_RM model)
+
+        [HttpGet("GetProductVariation")]
+        public async Task<IActionResult> GetVariationsByFilter(string stockCode)
         {
+            var models = await _productService.GetVariationsByFilter(stockCode);
+            return Ok(models);
+        }
+
+        [HttpGet("GetProductDetail/{brandName}")]
+        public async Task<IActionResult> GetProductDetail(string brandName)
+        {
+            var models = await _productService.GetProductDetail(brandName);
+            return Ok(models);
+        }
+
+        [HttpPost("GetProductCards")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Cards")]
+
+        public async Task<IActionResult> GetProductCards(string? stockCode)
+        {
+            _logger.LogInformation("Ürünler Çekildi");
+            var models = await _productService.GetProductCards(stockCode);
+            return Ok(models);
+        }
+
+        
+        [HttpPost("GetProductCardsByBrandId")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Cards By BrandId")]
+        public async Task<IActionResult> GetProductCardsByBrandId(string? brandId)
+        {
+            var models = await _productService.GetProductCardsByBrandId(brandId);
+            return Ok(models);
+        }
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Add Product")]
+        [HttpPost("AddProduct")]
+        public async Task<IActionResult> AddProduct(ProductAdd_DTO productDto)
+        {
+            var response = await _productService.AddProduct(productDto,true,true, true);
+
+            if (response)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest("Ürün eklenirken bir hata oluştu.");
+            }
+        }
+
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get VartiationsList")]
+        [HttpPost("GetVartiationsList")]
+        public async Task<ActionResult<List<ProductVariation_VM>>> GetVartiationsList(GetVariationsIdListCommandModel model)
+        {
+
             try
             {
-                if (model.Barcode != null)
-                {
-                    List<ProductList_VM> products = await _context.ProductListModel.FromSqlRaw($"exec Get_MSRafSearch '{model.Barcode}'").ToListAsync();
+                List<ProductVariation_VM> response = await _productService.GetVartiationsList(model);
 
-                    return Ok(products);
+                if (response != null)
+                {
+                    return Ok(response);
                 }
                 else
                 {
-                    return BadRequest("Barkod Boş Geldi");
+                    return BadRequest();
                 }
-
-
-
-
-
             }
             catch (Exception ex)
             {
+                return BadRequest(ex.Message);
 
-                return BadRequest(ErrorTextBase + ex.Message);
             }
-        }
 
-        [HttpPost("AddQr")]
-        public async Task<IActionResult> AddQr(QrCode model)
+        }
+       
+        [HttpGet("CheckProductByStockCode/{stockCode}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Check Product By StockCode")]
+        public async Task<IActionResult> CheckProductByStockCode(string stockCode)
+        {
+
+            try
+            {
+                var response = await _productService.CheckProductByStockCode(stockCode);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+           
+        }
+        [HttpPost("update")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Updating, Definition = "Update Product")]
+        public async Task<ActionResult<bool>> UpdateProduct(ProductAdd_DTO productDto)
         {
             try
             {
-                string query = $"exec InsertQrCode '{model.Barcode}','{model.ShelfNo}','{model.Quantity}','{model.Id}','{model.BatchCode}','{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}'";
+                bool result = await _productService.UpdateProduct(productDto);
 
-                int qrCode = _context.Database.ExecuteSqlRaw(query);
-                if (qrCode == -1)
+                if (result)
                 {
                     return Ok(true);
                 }
                 else
                 {
-                    return BadRequest(false);
+                    return BadRequest("Ürün güncellenirken bir hata oluştu.");
                 }
-
-
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ErrorTextBase + ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
-        [HttpPost("GenerateBarcode_A")]
-        public async Task<IActionResult> GenerateBarcode_A(BarcodeModel_A model)
-        {
-            string methodName = await _gs.GetCurrentMethodName(MethodBase.GetCurrentMethod().ReflectedType.Name);
-            
-            try
-            {
-                List<BarcodeModel_A> list = new List<BarcodeModel_A>();
-                list.Add(model);
-                string page = await _ps.GenerateBarcode_A(list);
-                BarcodeModelResponse barcodeModelResponse = new BarcodeModelResponse();
-                barcodeModelResponse.Page = page;   
-                return Ok(barcodeModelResponse);
-            }
-            catch (Exception ex)
-            {
-                await _ls.LogOrderError($"{HttpContext.Request.Path}", $"{methodName} Sırasında Hata Alındı", $"{ex.Message}");
-                return BadRequest(ErrorTextBase + ex.Message);
-            }
-        }
-
-
-        [HttpPost("QrControl")]
-        public async Task<IActionResult> QrControl(QrControlCommandModel qrControlCommandModel)
+        [HttpPost("upload-photoduct-photos")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Upload Product Photos")]
+        public async Task<ActionResult<bool>> UploadProductPhotos(UploadProductPhotoCommandModel model)
         {
             try
             {
-                string query = $"select * from usp_QRKontrol3('{qrControlCommandModel.Qr}','1')";
+                bool result = await _productService.UploadProductPhotos(model);
 
-                QrControlModel? model = _context.QrControlModel?.FromSqlRaw(query).ToList().First();
-                
-                if (model!=null)
+                if (result)
                 {
-                    return Ok(model);
+                    return Ok(true);
                 }
                 else
                 {
-                    return BadRequest(false);
+                    return BadRequest("Fotoğraf eklenirken bir hata oluştu.");
                 }
-
-
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ErrorTextBase + ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Photos")]
+        [HttpPost("get-product-photos")]
+        public async Task<ActionResult<List<GetProductPhotoResponse>>> GetProductPhotos(GetProductPhotoCommandModel model)
+        {
+            try
+            {
+                var result = await _productService.GetProductPhotos(model);
+
+                if (result!=null)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest("Fotoğraf eklenirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost("delete-product-photo-by-id")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Deleting, Definition = "Delete Product Photo By PhotoId")]
+        public async Task<ActionResult<bool>> DeleteProductPhotoByPhotoId(DeleteProductPhotoByIdCommandModel model)
+        {
+            try
+            {
+                bool result = await _productService.DeleteProductPhotoByPhotoId(model);
+
+                if (result)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return BadRequest("Fotoğraf silinirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("delete-product-card")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Deleting, Definition = "Delete Product Card")]
+        public async Task<ActionResult<bool>> DeleteProductCard(ProductCard_DTO model)
+        {
+            try
+            {
+                bool result = await _productService.DeleteProductCard(model);
+
+                if (result)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return BadRequest("Fotoğraf silinirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("update-product-stock-by-id")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Updating, Definition = "Update Product Stock By Id")]
+        public async Task<ActionResult<bool>> UpdateProductStockById(UpdateProductStockByIdComandModel model)
+        {
+            try
+            {
+                bool result = await _productService.UpdateProductStockById(model);
+
+                if (result)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return BadRequest("Fotoğraf silinirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost("get-categories-of-product")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Categories Of Product")]
+        public async Task<ActionResult<CategoriesList_VM>> GetCategoriesOfProduct(GetVariationsIdListCommandModel model)
+        {
+            try
+            {
+                List<CategoriesList_VM>? list = await _productService.GetCategoriesOfProduct(model.StockCode);
+
+                if (list!=null)
+                {
+                    return Ok(list);
+                }
+                else
+                {
+                    return BadRequest("Ürün güncellenirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("update-fist-photo-of-card")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Updating, Definition = "Update Fist Photo Of Card")]
+        public async Task<ActionResult<CategoriesList_VM>> UpdateFistPhotoOfCard(UpdateFistPhotoOfCardCommandModel model)
+        {
+            try
+            {
+                bool result = await _productService.UpdateFistPhotoOfCard(model);
+
+                if (result)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return BadRequest("Fotoğraf güncellenirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
 
