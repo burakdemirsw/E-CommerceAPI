@@ -17,7 +17,6 @@
     <Folder Include="Models\Brand\Dto\" />
     <Folder Include="Models\Brand\Filters\" />
     <Folder Include="Models\Brand\ResponseModel\" />
-    <Folder Include="Models\Category\CommandModel\" />
     <Folder Include="Models\Category\Filters\" />
     <Folder Include="Models\Category\ResponseModel\" />
     <Folder Include="Models\Order\Dto\" />

@@ -5,13 +5,17 @@ using GoogleAPI.Domain.Models.Category;
 using GoogleAPI.Domain.Models.Category.Dto;
 using GoogleAPI.Domain.Models.Category.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.ICategory;
+using GooleAPI.Application.Consts;
+using GooleAPI.Application.CustomAttributes;
+using GooleAPI.Application.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAPI.API.Controllers
 {
     [Route("api/categories")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes ="Admin")]
+    [Authorize(AuthenticationSchemes = "Admin")]
     public class MainCategorysController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -23,7 +27,8 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpGet("get-main-category")]
-        public async Task<ActionResult<IEnumerable<MainCategory_VM>>> GetMainCategorys(int id)
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Categories, ActionType = ActionType.Reading, Definition = "Get Main Categories")]
+        public async Task<ActionResult<IEnumerable<MainCategory_VM>>> GetMainCategories(int id)
         {
             try
             {
@@ -38,7 +43,8 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpGet("get-sub-category")]
-        public async Task<ActionResult<IEnumerable<SubCategory_VM>>> GetSubCategorys(int id)
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Categories, ActionType = ActionType.Reading, Definition = "Get Sub Categories")]
+        public async Task<ActionResult<IEnumerable<SubCategory_VM>>> GetSubCategories(int id)
         {
             try
             {
@@ -54,6 +60,7 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpGet("get-all-categories")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Categories, ActionType = ActionType.Reading, Definition = "Get All Categories")]
         public async Task<ActionResult<IEnumerable<CategoriesList_VM>>> GetAllCategories(int id)
         {
             try
@@ -68,6 +75,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("add")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Categories, ActionType = ActionType.Writing, Definition = "Add Category")]
         public async Task<ActionResult<Category>> AddCategory(CategoryAdd_DTO model)
         {
             try
@@ -89,7 +97,8 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-        [HttpPost("UpdateCategoryVisibleOption")]
+        [HttpPost("update-category-visible-option")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Categories, ActionType = ActionType.Updating, Definition = "Update Category Visible Option")]
         public async Task<ActionResult<bool>> UpdateCategoryVisibleOption(UpdateCategoryVisibleOptionsCommandModel model)
         {
             try
@@ -113,6 +122,7 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpDelete("delete/{id}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Categories, ActionType = ActionType.Deleting, Definition = "Delete Category")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             try

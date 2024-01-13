@@ -19,10 +19,8 @@ namespace GoogleAPI.Domain.Entities.User
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public string? RefreshToken { get; set; }
+        public ICollection<RoleUser> RoleUsers { get; set; }
 
-        [ForeignKey(nameof(Role))]
-        public int? RoleId { get; set; }
-        public Role Role { get; set; }
 
         public DateTime? RefreshTokenEndDate { get; set; }
 

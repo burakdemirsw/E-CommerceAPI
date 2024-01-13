@@ -4,6 +4,7 @@ using GoogleAPI.Persistance.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoogleAPI.Persistance.Migrations
 {
     [DbContext(typeof(GooleAPIDbContext))]
-    partial class GooleAPIDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240112100559_12.02")]
+    partial class _1202
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,7 +57,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(2637));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(5242));
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -89,7 +92,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(2944));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(5515));
 
                     b.HasKey("Id");
 
@@ -121,7 +124,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3096));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(5683));
 
                     b.HasKey("Id");
 
@@ -154,7 +157,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3248));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(5813));
 
                     b.HasKey("Id");
 
@@ -179,7 +182,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3368));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(5961));
 
                     b.HasKey("Id");
 
@@ -204,7 +207,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3482));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6075));
 
                     b.HasKey("Id");
 
@@ -244,7 +247,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3629));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6213));
 
                     b.HasKey("Id");
 
@@ -271,11 +274,11 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3761));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6335));
 
                     b.HasKey("Id");
 
-                    b.ToTable("Menus");
+                    b.ToTable("Menu");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Order", b =>
@@ -307,7 +310,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(3901));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6525));
 
                     b.HasKey("Id");
 
@@ -319,39 +322,6 @@ namespace GoogleAPI.Persistance.Migrations
                     b.HasIndex("ShippingAddressId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Personal", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4055));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Personals");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Photo", b =>
@@ -368,7 +338,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4209));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6673));
 
                     b.Property<string>("Url")
                         .HasColumnType("nvarchar(max)");
@@ -448,7 +418,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4326));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6812));
 
                     b.Property<int?>("VATRate")
                         .HasColumnType("int");
@@ -511,7 +481,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4523));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(6971));
 
                     b.HasKey("Id");
 
@@ -577,7 +547,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4664));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(7106));
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -606,7 +576,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4816));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(7231));
 
                     b.HasKey("Id");
 
@@ -669,7 +639,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(4982));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(7350));
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -719,7 +689,7 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 12, 20, 5, 8, 245, DateTimeKind.Local).AddTicks(5111));
+                        .HasDefaultValue(new DateTime(2024, 1, 12, 13, 5, 58, 960, DateTimeKind.Local).AddTicks(7535));
 
                     b.HasKey("Id");
 

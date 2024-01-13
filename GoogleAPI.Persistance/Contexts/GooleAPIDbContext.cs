@@ -14,7 +14,7 @@ namespace GoogleAPI.Persistance.Contexts
 
         public GooleAPIDbContext(DbContextOptions options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-            {
+        {
 
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
@@ -52,8 +52,9 @@ namespace GoogleAPI.Persistance.Contexts
 
             #endregion
             #region user
-
-            modelBuilder.Entity<User>().HasOne(p => p.Role).WithMany(c => c.Users).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<RoleUser>()
+           .HasKey(pp => new { pp.UserId, pp.RoleId });
+            //modelBuilder.Entity<User>().HasOne(p => p.Role).WithMany(c => c.Users).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<BillingAddress>().HasOne(u => u.User).WithMany(b => b.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.Restrict); // Silme davranışını özelleştirir
 
 
@@ -70,7 +71,7 @@ namespace GoogleAPI.Persistance.Contexts
         }
         public DbSet<Menu>? Menus { get; set; }
         public DbSet<Endpoint>? Endpoints { get; set; }
-
+        public DbSet<RoleUser>? RoleUsers { get; set; }
         public DbSet<User>? Users { get; set; }
         public DbSet<ShippingAddress>? ShippingAddresses { get; set; }
         public DbSet<Provider>? Providers { get; set; }
@@ -83,7 +84,7 @@ namespace GoogleAPI.Persistance.Contexts
         public DbSet<Role>? Roles { get; set; }
         public DbSet<BillingAddress>? BillingAddresses { get; set; }
 
-        public DbSet<Menu>? Personals { get; set; }
+        public DbSet<Personal>? Personals { get; set; }
         public DbSet<Product>? Products { get; set; }
         public DbSet<Color>? Colors { get; set; }
         public DbSet<Brand>? Brands { get; set; }

@@ -1,16 +1,7 @@
-﻿using GoogleAPI.Domain.Entities;
-using GoogleAPI.Domain.Entities.User;
-using GoogleAPI.Domain.Models.Personal.ViewModel;
-using GoogleAPI.Domain.Models.User.CommandModel;
-using GoogleAPI.Domain.Models.User.ViewModel;
+﻿using GoogleAPI.Domain.Models.User.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.Role;
 using GooleAPI.Application.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Persistance.Concreates.Services.Role
 {
@@ -44,16 +35,16 @@ namespace GoogleAPI.Persistance.Concreates.Services.Role
             {
 
                 throw new Exception($"CreateRole method failed: {ex.Message}", ex);
-                
+
             }
-           
+
         }
 
         public async Task<bool> DeleteRole(int id)
         {
             try
             {
-                Domain.Entities.User.Role? role = await _rr.Table.FirstOrDefaultAsync(r=>r.Id == id);
+                Domain.Entities.User.Role? role = await _rr.Table.FirstOrDefaultAsync(r => r.Id == id);
                 if (role == null)
                 {
                     return false;
@@ -68,7 +59,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Role
             }
         }
 
-        public async Task<List<Role_VM>> GetRoles(int id )
+        public async Task<List<Role_VM>> GetRoles(int id)
         {
             try
             {
@@ -91,7 +82,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Role
                 {
                     Id = r.Id,
                     RoleName = r.RoleName,
-                 
+
                 }).ToList();
 
                 return _roles;
@@ -114,7 +105,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Role
                 else
                 {
                     role.RoleName = model.RoleName;
-                    var response  = await _rw.Update(role);
+                    var response = await _rw.Update(role);
                     if (response)
                     {
                         return true;

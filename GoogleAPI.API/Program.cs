@@ -1,20 +1,21 @@
 using GoogleAPI.API.Extentions;
+using GoogleAPI.API.Filters;
 using GooleAPI.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.IdentityModel.Tokens;
-using Serilog.Sinks.MSSqlServer;
 using Serilog;
-using System.Security.Claims;
-using System.Text;
+using Serilog.Core;
+using Serilog.Sinks.MSSqlServer;
 using System.Collections.ObjectModel;
 using System.Data;
-using Serilog.Core;
-using Microsoft.AspNetCore.HttpLogging;
-using Serilog.Context;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Servisler ekleniyor.
+
 builder.Services.AddPersistanceServices();
 
 builder.Services
@@ -91,20 +92,24 @@ builder.Services.AddCors(options =>
         // Ýzin verilen kökenleri (origins) burada belirtiyoruz.
         policy
             .WithOrigins(
-                "http://localhost:7178",
-                "http://212.156.46.206:7178",
-                "http://192.168.2.36:7178",
-                "http://212.156.46.206:4203",
+                 "http://localhost:7180",
+                "http://localhost:7180",
+                "http://212.156.46.206:7180",
+                "http://192.168.2.36:7180",
+                "http://localhost:4200",
+                "http://212.156.46.206:4200",
+                "http://192.168.2.36:4200",
                 "http://localhost:4203",
                 "http://192.168.2.36:4203",
-                "http://212.156.46.206:4200",
-                "http://localhost:4200",
-                "http://192.168.2.36:4200") // Yýldýz (*) kullanarak herhangi bir kaynaða izin verebilirsiniz.
+                "http://212.156.46.206:4203") // Yýldýz (*) kullanarak herhangi bir kaynaða izin verebilirsiniz.
              .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 
-builder.Services.AddControllers(); // Controller'larý ekliyoruz.
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<RolePermissionFilter>();
+}); // Controller'larý ekliyoruz.
 
 // Swagger/OpenAPI belgelerini yapýlandýrma.
 builder.Services.AddEndpointsApiExplorer();
@@ -113,8 +118,6 @@ builder.Services.AddApplicationInsightsTelemetry(); // Application Insights için
 
 var app = builder.Build();
 
-app.UseSerilogRequestLogging();
-app.UseHttpLogging();
 // HTTP istek iþleme hattýný yapýlandýrma.
 if (app.Environment.IsDevelopment())
 {
@@ -123,9 +126,13 @@ if (app.Environment.IsDevelopment())
 }
 app.ConfigureExceptionHandler<Program>();
 app.UseCors(); // CORS özelliðini etkinleþtiriyoruz.
+
+
 app.UseHttpsRedirection(); // HTTPS'e yönlendirme yapýlýyor.
 app.UseAuthentication();
 app.UseAuthorization(); // Yetkilendirme iþlemleri için kullanýlýyor.
+app.UseSerilogRequestLogging();
+app.UseHttpLogging();
 app.UseMiddleware<LogUserNameMiddleware>();
 
 app.MapControllers(); // Controller'lara yönlendirme yapýlýyor.

@@ -1,4 +1,5 @@
 ﻿
+using GoogleAPI.Domain.Models.Category.CommandModel;
 using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
@@ -13,9 +14,9 @@ namespace GooleAPI.Application.Abstractions.IServices.IOrder
 {
     public  interface IOrderService
     {
-        public Task<bool> AddBasketITem(BasketItem_VM model);
+        public Task<UpdateBasketItemCommandResponse> AddItemToBasket(AddBasketItem_VM model);
         public Task<bool> DeleteBasketItem(int id);
-        public Task<bool> UpdateBasketItemQuantity(BasketItem_VM model);
+        public Task<UpdateBasketItemCommandResponse> UpdateBasketItemQuantity(BasketItem_VM model);
         public Task<List<BasketItemList_VM>> GetBasketItems(int basketId);
 
         public Task<int> GetBasket(int userId);

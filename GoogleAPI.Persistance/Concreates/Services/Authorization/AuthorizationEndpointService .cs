@@ -3,15 +3,9 @@ using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.Authorization;
 using GooleAPI.Application.Abstractions.IServices.Configuration;
-using GooleAPI.Application.Abstractions.IServices.Role;
 using GooleAPI.Application.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using NHibernate.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Persistance.Concreates.Services.Authorization
 {
@@ -35,7 +29,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Authorization
             _endpointWriteRepository = endpointWriteRepository;
             _menuReadRepository = menuReadRepository;
             _menuWriteRepository = menuWriteRepository;
-          
+
             _roleReadRepository = roleReadRepository;
         }
 
@@ -60,7 +54,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Authorization
 
                 if (endpoint == null)
                 {
-                   List<GooleAPI.Application.Configuration.Menu>? list = await _applicationService.GetAuthorizeDefinitionEndpoints(model.Type);
+                    List<GooleAPI.Application.Configuration.Menu>? list = await _applicationService.GetAuthorizeDefinitionEndpoints(model.Type);
                     if (list.Count > 0)
                     {
                         Console.WriteLine(list.Count);
@@ -72,11 +66,11 @@ namespace GoogleAPI.Persistance.Concreates.Services.Authorization
                                 Console.WriteLine(_action.Code);
                             }
                         }
-                            
-                      
+
+
                     }
-                     var action = list.FirstOrDefault(m => m.Name == model.Menu)
-                            ?.Actions.FirstOrDefault(e => e.Code == model.Code);
+                    var action = list.FirstOrDefault(m => m.Name == model.Menu)
+                           ?.Actions.FirstOrDefault(e => e.Code == model.Code);
 
                     endpoint = new()
                     {
@@ -96,7 +90,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Authorization
                 foreach (var role in endpoint.Roles)
                     endpoint.Roles.Remove(role);
 
-                var appRoles =  _roleReadRepository.Table
+                var appRoles = _roleReadRepository.Table
                     .AsEnumerable()
                     .Where(r => model.Roles.Any(role => role.RoleName == r.RoleName))
                     .ToList
@@ -109,10 +103,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.Authorization
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);  
+                Console.WriteLine(ex.Message);
                 return false;
             }
-            
+
         }
 
         public async Task<List<Role_VM>> GetRolesToEndpointAsync(GetRolesToEndpointQueryRequest model)

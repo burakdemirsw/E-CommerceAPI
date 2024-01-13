@@ -13,9 +13,9 @@ namespace GoogleAPI.Domain.Models.Product.ViewModel
         public string? Description { get; set; }
         public string? Color { get; set; }
         public List<Variant_VM>? Variations { get; set; }
-        public decimal NormalPrice { get; set; }
-        public decimal PurchasePrice { get; set; }
-        public decimal DiscountedPrice { get; set; }
+        public decimal? NormalPrice { get; set; }
+        public decimal? PurchasePrice { get; set; }
+        public decimal? DiscountedPrice { get; set; }
         public string? Brand { get; set; }
         public List<Photo_VM>? PhotoUrl { get; set; }
 

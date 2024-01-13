@@ -1,7 +1,12 @@
+using GoogleAPI.Domain.Models.Category.CommandModel;
 using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
+using GooleAPI.Application.Consts;
+using GooleAPI.Application.CustomAttributes;
+using GooleAPI.Application.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAPI.API.Controllers
@@ -17,7 +22,9 @@ namespace GoogleAPI.API.Controllers
             _basketService = basketService;
         }
 
-        [HttpGet("get-basket-items  /{basketId}")]
+        [HttpGet("get-basket-items/{basketId}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Basket Items")]
         public async Task<ActionResult<List<BasketItemList_VM>>> GetBasketItems(int basketId)
         {
             try
@@ -25,13 +32,13 @@ namespace GoogleAPI.API.Controllers
                 // Call the service method to get basket items
                 var basketItems = await _basketService.GetBasketItems(basketId);
 
-                if (basketItems != null)
+                if (basketItems.Count > 0)
                 {
                     return Ok(basketItems);
                 }
                 else
                 {
-                    return NotFound("Basket not found or empty.");
+                    return Ok(basketItems);
                 }
             }
             catch (Exception ex)
@@ -43,6 +50,8 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpDelete("delete-basket/{id}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Deleting, Definition = "Delete Basket")]
         public async Task<ActionResult<bool>> DeleteBasket(int id)
         {
             try
@@ -64,6 +73,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpDelete("delete-basket-item/{id}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Deleting, Definition = "Delete Basket Item")]
         public async Task<ActionResult<bool>> DeleteBasketItem(int id)
         {
             try
@@ -85,6 +96,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpGet("get-basket/{userId}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Basket")]
         public async Task<ActionResult> GetBasket(int userId)
         {
             try
@@ -99,6 +112,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("add-basket/{userId}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Writing, Definition = "Add Basket")]
         public async Task<ActionResult<bool>> AddBasket(int userId)
         {
             try
@@ -120,17 +135,19 @@ namespace GoogleAPI.API.Controllers
         }
 
 
-        [HttpPost("add-basket-item")]
-        public async Task<ActionResult<bool>> AddBasketItem([FromBody] BasketItem_VM model)
+        [HttpPost("add-item-to-basket")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Writing, Definition = "Add Item To Basket")]
+        public async Task<ActionResult<UpdateBasketItemCommandResponse>> AddItemToBasket([FromBody] AddBasketItem_VM model)
         {
             try
             {
                 // Call the service method to add the basket item
-                bool isSuccess = await _basketService.AddBasketITem(model);
+                UpdateBasketItemCommandResponse updateBasketItemCommandResponse = await _basketService.AddItemToBasket(model);
 
-                if (isSuccess)
+                if (updateBasketItemCommandResponse.State)
                 {
-                    return Ok(isSuccess);
+                    return Ok(updateBasketItemCommandResponse);
                 }
                 else
                 {
@@ -144,6 +161,8 @@ namespace GoogleAPI.API.Controllers
             }
         }
         [HttpPost("update-basket-item-quantity")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Updating, Definition = "Update Basket Item Quantity")]
         public async Task<ActionResult<bool>> UpdateBasketItemQuantity(BasketItem_VM model)
         {
             try
@@ -165,6 +184,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("get-orders")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
         public async Task<ActionResult<bool>> GetOrders(OrderListFilterCommandModel model)
         {
             try
@@ -186,6 +207,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("create-order")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
         public async Task<ActionResult<bool>> CreateOrder(CreateOrderCommandModel model)
         {
             try
@@ -207,6 +230,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("complete-order/{id}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Writing, Definition = "Complete Order")]
         public async Task<ActionResult<bool>> CompleteOrder(CompleteOrderCommandModel model)
         {
             try
@@ -229,10 +254,13 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpDelete("delete-order/{id}")]
-        public async Task<ActionResult<bool>> GetOrder(int id)
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Deleting, Definition = "Delete Order")]
+        public async Task<ActionResult<bool>> DeleteOrder(int id)
         {
             try
             {
+
                 var response = await _basketService.DeleteOrder(id);
                 if (response != null)
                 {

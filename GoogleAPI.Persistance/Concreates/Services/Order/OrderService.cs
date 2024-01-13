@@ -1,5 +1,6 @@
 ﻿
 using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Models.Category.CommandModel;
 using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
@@ -67,11 +68,14 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         public async Task<bool> DeleteBasketItem(int id)
         {
+            //UpdateBasketItemCommandResponse updateBasketItemCommandResponse = new UpdateBasketItemCommandResponse();    
             try
             {
                 BasketItem? basketItem = await _bir.Table.FirstOrDefaultAsync(c => c.Id == id);
                 if (basketItem == null)
                 {
+                    //updateBasketItemCommandResponse.State = false;
+                    //updateBasketItemCommandResponse.BasketId = basketItem?.BasketId;
                     return false;
                 }
 
@@ -87,19 +91,27 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
         public async Task<int> GetBasket(int userId)
         {
 
-
-            var basket = await _br.Table.FirstOrDefaultAsync(b => b.UserId == userId && b.Order != null && !b.Order.IsCompleted);
-
-            if (basket == null)
+            try
             {
-                CreateBasketResponseModel responseModel = new CreateBasketResponseModel();
-                responseModel = await AddBasket(userId);
-                return responseModel.BasketId;
+                Basket? basket = await _br.Table.FirstOrDefaultAsync(b => b.UserId == userId && b.Order == null);
+
+                if (basket == null)
+                {
+                    CreateBasketResponseModel responseModel = new CreateBasketResponseModel();
+                    responseModel = await AddBasket(userId);
+                    return responseModel.BasketId;
+                }
+                else
+                {
+                    return basket.Id;
+                }
             }
-            else
+            catch (Exception)
             {
-                return basket.Id;
+
+                return 0;
             }
+
 
 
         }
@@ -204,9 +216,6 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         public async Task<List<BasketItemList_VM>> GetBasketItems(int basketId)
         {
-            // Create a list to hold BasketItemList_VM objects
-            List<BasketItemList_VM> basketItemList_VM = new List<BasketItemList_VM>();
-
             // Query to retrieve basket items and join them with product information
             var query = from bi in _bir.Table
                         join p in _pr.Table on bi.ProductId equals p.Id
@@ -215,18 +224,28 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                         join c in _context.Colors on p.ColorId equals c.Id
                         join d in _context.Dimensions on p.DimensionId equals d.Id
                         where bi.BasketId == basketId // Add a condition to filter by basket ID
-                        select new BasketItemList_VM
+                        group new { bi, p, ph, c, d } by new
                         {
-                            Description = p.Description,
-                            Quantity = bi.Quantity,
-                            PhotoUrl = ph.Url,
+                            bi.Id,
+                            p.Description,
+                            ph.Url,
                             ColorDescription = c.Description,
                             DimentionDescription = d.Description,
-                            Price = p.NormalPrice
+                            p.NormalPrice
+                        } into grouped
+                        select new BasketItemList_VM
+                        {
+                            Id = grouped.Key.Id,
+                            Description = grouped.Key.Description,
+                            Quantity = grouped.Sum(item => item.bi.Quantity),
+                            PhotoUrl = grouped.Key.Url,
+                            ColorDescription = grouped.Key.Description,
+                            DimentionDescription = grouped.Key.Description,
+                            Price = grouped.Key.NormalPrice
                         };
 
             // Execute the query and populate the BasketItemList_VM list
-            basketItemList_VM = await query.ToListAsync(); // Assuming you are using Entity Framework or a similar ORM
+            var basketItemList_VM = await query.ToListAsync(); // Assuming you are using Entity Framework or a similar ORM
 
             // Check if there are any results
             if (basketItemList_VM.Any())
@@ -254,30 +273,62 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         //sepetteki ürün adedini günceller 
         //eğer istenen miktar stoktakinden fazla ise hata dönmesi lazım
-        public async Task<bool> UpdateBasketItemQuantity(BasketItem_VM model)
+        public async Task<UpdateBasketItemCommandResponse> UpdateBasketItemQuantity(BasketItem_VM model)
         {
-            BasketItem? basketItem = await _biw.Table.FirstOrDefaultAsync(bi => bi.BasketId == model.BasketId && bi.ProductId == model.ProductId);
+            UpdateBasketItemCommandResponse updateBasketItemCommandResponse = new UpdateBasketItemCommandResponse();
+
+
+            BasketItem? basketItem = await _biw.Table.FirstOrDefaultAsync(bi => bi.BasketId == model.BasketId);
             if (basketItem != null)
             {
-                basketItem.Quantity = model.Quantity;
+                basketItem.Quantity = basketItem.Quantity + model.Quantity;
                 bool response = await _biw.Update(basketItem);
-
-                return response;
+                updateBasketItemCommandResponse.State = true;
+                updateBasketItemCommandResponse.BasketId = basketItem.BasketId;
+                return updateBasketItemCommandResponse;
             }
-
-            return false;
+            updateBasketItemCommandResponse.State = true;
+            updateBasketItemCommandResponse.BasketId = model.BasketId;
+            return updateBasketItemCommandResponse;
 
         }
         //sepetteki ürün adedini günceller
-        public async Task<bool> AddBasketITem(BasketItem_VM model)
+        public async Task<UpdateBasketItemCommandResponse> AddItemToBasket(AddBasketItem_VM model)
         {
-            BasketItem basketItem = new BasketItem();
-            basketItem.ProductId = model.ProductId;
-            basketItem.Quantity = model.Quantity;
-            basketItem.BasketId = model.BasketId;
-            basketItem.CreatedDate = DateTime.Now;
-            var response = await _biw.AddAsync(basketItem);
-            return response;
+            UpdateBasketItemCommandResponse updateBasketItemCommandResponse = new UpdateBasketItemCommandResponse();
+            Basket? basket = _context.Baskets.FirstOrDefault(b => b.Id == model.BasketId);
+            if (basket == null)
+            {
+                CreateBasketResponseModel createBasketResponseModel = await AddBasket(model.UserId);
+                model.BasketId = createBasketResponseModel.BasketId;
+
+            }
+
+
+            BasketItem? checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == model.ProductId);
+
+            if (checkBasketItem == null)
+            {
+                BasketItem basketItem = new BasketItem();
+                basketItem.ProductId = model.ProductId;
+                basketItem.Quantity = model.Quantity;
+                basketItem.BasketId = model.BasketId;
+                basketItem.CreatedDate = DateTime.Now;
+                var response1 = await _biw.AddAsync(basketItem);
+                updateBasketItemCommandResponse.State = true;
+                updateBasketItemCommandResponse.BasketId = basketItem.BasketId;
+                return updateBasketItemCommandResponse;
+            }
+            else
+            {
+                checkBasketItem.Quantity += model.Quantity;
+                var response2 = await _biw.Update(checkBasketItem);
+                updateBasketItemCommandResponse.State = true;
+                updateBasketItemCommandResponse.BasketId = model.BasketId;
+                return updateBasketItemCommandResponse;
+            }
+
+
 
 
         }

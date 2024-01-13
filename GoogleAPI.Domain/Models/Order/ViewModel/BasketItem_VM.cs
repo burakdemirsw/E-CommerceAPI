@@ -15,4 +15,13 @@ namespace GoogleAPI.Domain.Models.Order.ViewModel
         public int? ProductId { get; set; }
 
     }
+    public class AddBasketItem_VM
+    {
+        public int? BasketId { get; set; }
+
+        public int Quantity { get; set; }
+
+        public int? ProductId { get; set; }
+        public int UserId { get; set; }
+    }
 }

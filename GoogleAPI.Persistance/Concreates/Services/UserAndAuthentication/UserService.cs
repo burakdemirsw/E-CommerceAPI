@@ -1,14 +1,17 @@
-﻿
-using GoogleAPI.Domain.Entities.User;
+﻿using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.Filters;
+using GoogleAPI.Domain.Models.User.ResponseModel;
 using GoogleAPI.Domain.Models.User.ViewModel;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.IAuthentication;
+using GooleAPI.Application.Abstractions.IServices.IOrder;
 using GooleAPI.Application.Abstractions.IServices.IUser;
+using GooleAPI.Application.IRepositories;
 using GooleAPI.Application.IRepositories.UserAndCommunication;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 {
@@ -20,6 +23,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
         private readonly IAddressWriteRepository _aw;
         private readonly IAddressReadRepository _ar;
         private readonly ITokenService _ts;
+        private readonly IEndpointReadRepository _endpointReadRepository;
+        private readonly IOrderService _orderService;
 
         private readonly string ErrorTextBase = "İstek Sırasında Hata Oluştu: ";
 
@@ -28,9 +33,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             IUserWriteRepository userWriteRepository,
             IUserReadRepository userReadRepository,
             ITokenService tokenService,
-
+            IOrderService orderService,
             IAddressWriteRepository addressWriteRepository,
-            IAddressReadRepository addressReadRepository
+            IAddressReadRepository addressReadRepository, IEndpointReadRepository err
+
         )
         {
             _context = context;
@@ -39,6 +45,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             _ts = tokenService;
             _aw = addressWriteRepository;
             _ar = addressReadRepository;
+            _endpointReadRepository = err;
+            _orderService = orderService;
         }
         public async Task<bool> DeleteUser(int Id)
         {
@@ -55,7 +63,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             }
         }
 
-        public async Task<Token> Login(UserLoginCommandModel model)
+        public async Task<UserClientInfoResponse> Login(UserLoginCommandModel model)
         {
 
             User? user = new User();
@@ -80,8 +88,12 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 
                                 if (response)
                                 {
-
-                                    return token;
+                                    UserClientInfoResponse userClientInfoResponse = new UserClientInfoResponse();
+                                    userClientInfoResponse.Token = token;
+                                    userClientInfoResponse.UserId = user.Id;
+                                    userClientInfoResponse.Mail = user.Email;
+                                    userClientInfoResponse.BasketId = await _orderService.GetBasket(user.Id);
+                                    return userClientInfoResponse;
                                 }
                             }
                             else
@@ -101,8 +113,12 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 
                                 if (response)
                                 {
-
-                                    return token;
+                                    UserClientInfoResponse userClientInfoResponse = new UserClientInfoResponse();
+                                    userClientInfoResponse.Token = token;
+                                    userClientInfoResponse.UserId = user2.Id;
+                                    userClientInfoResponse.Mail = user2.Email;
+                                    userClientInfoResponse.BasketId = await _orderService.GetBasket(user2.Id);
+                                    return userClientInfoResponse;
                                 }
                             }
                             else
@@ -170,10 +186,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
         {
             try
             {
-                User? checkUserByPhoneNumber = _context.Users?.FirstOrDefault(u => u.PhoneNumber == model.PhoneNumber);
+                User? checkUserById = _context.Users?.FirstOrDefault(u => u.PhoneNumber == model.PhoneNumber);
 
                 User? checkUserByEmail = _context.Users?.FirstOrDefault(u => u.Email == model.Email);
-                if (checkUserByPhoneNumber != null)
+                if (checkUserById != null)
                 {
                     throw new Exception("Bu Telefon Numarasına Ait Kullanıcı Bulunmaktadır");
                 }
@@ -192,11 +208,28 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                     user.Email = model.Email;
                     user.SubscribeToPromotions = model.SubscribeToPromotions;
                     user.ShippingAddresses = null;
-                    user.RoleId = model.RoleId;
+
 
                     bool response = await _uw.AddAsync(user);
+
                     if (response)
                     {
+                        User _user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                        if (model.Roles != null)
+                        {
+                            foreach (var role in model.Roles)
+                            {
+                                await _context.RoleUsers.AddAsync(new() { UserId = _user.Id, RoleId = role.Id });
+                            }
+                            _context.SaveChanges();
+
+                        }
+                        else
+                        {
+                            await _context.RoleUsers.AddAsync(new() { UserId = _user.Id, RoleId = 2 }); //Customer
+                            _context.SaveChanges();
+                        }
+
                         Token token = await _ts.CreateAccsessToken(120, user);
                         if (token.RefreshToken != null)
                         {
@@ -220,23 +253,44 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
         {
             try
             {
-                User? checkUserByPhoneNumber = _context.Users?.FirstOrDefault(u => u.Id == model.Id);
+                User? checkUserById = _context.Users?.FirstOrDefault(u => u.Id == model.Id);
 
-                User? checkUserByEmail = _context.Users?.FirstOrDefault(u => u.Email == model.Email);
-                if (checkUserByPhoneNumber != null)
+                //User? checkUserByEmail = _context.Users?.FirstOrDefault(u => u.Email == model.Email);
+                if (checkUserById != null)
                 {
 
 
-                    checkUserByPhoneNumber.FirstName = model.FirstName;
-                    checkUserByPhoneNumber.LastName = model.LastName;
-                    checkUserByPhoneNumber.Password = model.Password;
-                    checkUserByPhoneNumber.PhoneNumber = model.PhoneNumber;
-                    checkUserByPhoneNumber.Email = model.Email;
-                    checkUserByPhoneNumber.SubscribeToPromotions = model.SubscribeToPromotions;
-                    checkUserByPhoneNumber.ShippingAddresses = null;
-                    checkUserByPhoneNumber.RoleId = model.RoleId;
+                    checkUserById.FirstName = model.FirstName;
+                    checkUserById.LastName = model.LastName;
+                    checkUserById.Password = model.Password;
+                    checkUserById.PhoneNumber = model.PhoneNumber;
+                    checkUserById.Email = model.Email;
+                    checkUserById.SubscribeToPromotions = model.SubscribeToPromotions;
+                    checkUserById.ShippingAddresses = null;
+                    List<RoleUser>? roleUsers = await _context.RoleUsers.Where(ru => ru.UserId == model.Id).ToListAsync();
+                    if (roleUsers != null)
+                    {
 
-                    bool response = await _uw.Update(checkUserByPhoneNumber);
+                        _context.RoleUsers.RemoveRange(roleUsers);
+                        _context.SaveChanges();
+
+                        foreach (Role_VM role in model.Roles)
+                        {
+                            RoleUser roleUser = new RoleUser();
+                            roleUser.UserId = model.Id;
+                            roleUser.RoleId = role.Id;
+                            await _context.RoleUsers.AddAsync(roleUser);
+                        }
+                        _context.SaveChanges();
+
+                    }
+                    else
+                    {
+                        await _context.RoleUsers.AddAsync(new() { RoleId = 2, UserId = model.Id });
+                        _context.SaveChanges();
+                    }
+
+                    bool response = await _uw.Update(checkUserById);
 
                     return response;
 
@@ -275,9 +329,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             return false;
         }
 
-        public async Task<RefreshTokenCommandResponse> RefreshTokenLogin(string RefreshToken)
+        public async Task<UserClientInfoResponse> RefreshTokenLogin(string RefreshToken)
         {
             RefreshTokenCommandResponse response = new();
+            UserClientInfoResponse _response = new();
             User? user = await _ur.Table.FirstOrDefaultAsync(
                 u => u.RefreshToken == RefreshToken
             );
@@ -291,14 +346,22 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 response.State = true;
                 response.Token = token;
                 response.Token.RefreshToken = token.RefreshToken;
+                _response.RefreshTokenCommandModel = response;
+                _response.UserId = user.Id;
+                _response.BasketId = await _orderService.GetBasket(user.Id);
+                _response.Mail = user.Email;
             }
             else
             {
                 response.State = false;
                 response.Token = null;
+                _response.RefreshTokenCommandModel = response;
+                _response.UserId = user.Id;
+                _response.BasketId = await _orderService.GetBasket(user.Id);
+                _response.Mail = user.Email;
             }
 
-            return response;
+            return _response;
         }
 
         public async Task<List<UserList_VM>> GetUsers(GetUserFilter? model)
@@ -337,8 +400,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 Password = u.Password,
                 PhoneNumber = u.PhoneNumber,
                 SubscribeToPromotions = u.SubscribeToPromotions,
-                RoleName = roles.FirstOrDefault(r => r.Id == u.RoleId).RoleName
-
+                RoleName = _context.Roles.FirstOrDefault(r => r.Id == _context.RoleUsers.FirstOrDefault(ru => ru.UserId == u.Id).RoleId)?.RoleName
 
             }).Take(model.Count).ToList();
 
@@ -355,5 +417,86 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 return null;
             }
         }
+
+        public async Task<bool> AssignRoleToUserAsync(AssignRoleToUserCommandRequest model)
+        {
+            User? user = await _ur.GetByIdAsync(model.UserId);
+            if (user != null)
+            {
+                List<RoleUser>? roleUsers = await _context.RoleUsers.Where(ru => ru.UserId == model.UserId).ToListAsync();
+                if (roleUsers != null)
+                {
+
+                    _context.RoleUsers.RemoveRange(roleUsers);
+                    _context.SaveChanges();
+
+                    foreach (Role_VM role in model.Roles)
+                    {
+                        RoleUser roleUser = new RoleUser();
+                        roleUser.UserId = model.UserId;
+                        roleUser.RoleId = role.Id;
+                        await _context.RoleUsers.AddAsync(roleUser);
+                    }
+                    _context.SaveChanges();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public async Task<List<Role_VM>> GetRolesOfUser(int id)
+        {
+            User? user = await _ur.GetByIdAsync(id);
+            if (user != null)
+            {
+                List<RoleUser>? roleUsers = await _context.RoleUsers.Where(ru => ru.UserId == id).ToListAsync();
+                if (roleUsers != null)
+                {
+
+                    List<Role_VM> roleList = new List<Role_VM>();
+
+
+                    foreach (RoleUser role in roleUsers)
+                    {
+                        GoogleAPI.Domain.Entities.User.Role _role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == role.RoleId);
+                        Role_VM _role_VM = new Role_VM();
+                        _role_VM.Id = _role.Id;
+                        _role_VM.RoleName = _role.RoleName;
+                        roleList.Add(_role_VM);
+                    }
+
+                    return roleList;
+                }
+            }
+            return null;
+        }
+
+        public async Task<bool> HasRolePermissionToEndpointAsync(int id, string code)
+        {
+            var userRoles = await GetRolesOfUser(id);
+
+            if (!userRoles.Any())
+                return false;
+
+            Domain.Entities.Endpoint? endpoint = await _endpointReadRepository.Table
+                     .Include(e => e.Roles)
+                     .FirstOrDefaultAsync(e => e.Code == code);
+
+            if (endpoint == null)
+                return false;
+            var endpointRoles = endpoint.Roles.Select(r => r.RoleName);
+
+
+            foreach (var userRole in userRoles)
+            {
+                foreach (var endpointRole in endpointRoles)
+                    if (userRole.RoleName == endpointRole)
+                        return true;
+            }
+
+            return false;
+        }
     }
+
+
 }

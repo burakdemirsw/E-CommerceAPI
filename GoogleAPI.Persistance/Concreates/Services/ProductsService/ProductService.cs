@@ -6,28 +6,26 @@ using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
 using GoogleAPI.Domain.Models.Product.ViewModel;
 using GoogleAPI.Persistance.Contexts;
-using GooleAPI.Application.Abstractions.IServices.Common;
 using GooleAPI.Application.Abstractions.IServices.IProduct;
 using GooleAPI.Application.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace GooleAPI.Persistance.Services.ProductsService
 {
     public class ProductService : IProductService
     {
         private readonly GooleAPIDbContext _c;
-        private readonly ITranslateService _translate;
+
         private readonly IProductWriteRepository _pw;
         private readonly IProductReadRepository _pr;
         private readonly IPhotoWriteRepository _ph;
-        public ProductService(GooleAPIDbContext context, ITranslateService translate, IProductWriteRepository pw, IProductReadRepository pr, IPhotoWriteRepository ph)
+        public ProductService(GooleAPIDbContext context, IProductWriteRepository pw, IProductReadRepository pr, IPhotoWriteRepository ph)
         {
             _c = context;
-            _translate = translate;
+
             _pr = pr;
             _pw = pw;
-            _ph= ph;
+            _ph = ph;
         }
 
         public async Task<List<ProductVariation_VM>> GetVariationsByFilter(string stockCode)
@@ -44,30 +42,118 @@ namespace GooleAPI.Persistance.Services.ProductsService
             }
         }
 
-        public async Task<List<ProductDetail_VM>> GetProductDetail(string brandName)
+        public async Task<List<ProductDetail_VM>> GetProductsByBrandName(string brandName)
         {
             try
             {
-                var query = $"GetProductDetail '{brandName}'";
-                var models = await _c.ProductDetail_DTO.FromSqlRaw(query).ToListAsync();
+                var query = from p in _c.Products
+                            join c in _c.Colors on p.ColorId equals c.Id
+                            join b in _c.Brands on p.BrandId equals b.Id
+                            join pp in _c.ProductPhotos on p.Id equals pp.ProductId into photoGroup
+                            from pp in photoGroup.DefaultIfEmpty() // Left join için kullanılır
+                            join ph in _c.Photos on pp.PhotoId equals ph.Id into photoInfo
+                            from ph in photoInfo.DefaultIfEmpty() // Left join için kullanılır
+                            where b.Description == brandName
+                            group new { p, pp, ph } by new
+                            {
+                                p.StockCode,
+                                Description = p.Description + "-" + c.Description,
+                                p.CoverLetter,
+                                p.NormalPrice,
+                                p.PurchasePrice,
+                                p.DiscountedPrice,
+                                p.VATRate,
+                                p.IsActive,
+                                p.IsNew,
+                                p.IsFreeCargo,
+                                p.ColorId,
+                                BrandDescription = b.Description
+                            } into g
+                            select new ProductDetail_VM
+                            {
+                                Color = g.Key.ColorId.ToString(),
+                                StockCode = g.Key.StockCode,
+                                Description = g.Key.Description,
+                                Brand = g.Key.BrandDescription,
+                                NormalPrice = g.Key.NormalPrice,
+                                PurchasePrice = g.Key.PurchasePrice,
+                                DiscountedPrice = g.Key.DiscountedPrice,
+                                PhotoUrl = g.Select(item => item.ph.Url).Distinct().Select(url => new Photo_VM { Url = url }).ToList(),
+                                Variations = _c.Products.Where(p => p.StockCode == g.Key.StockCode && p.ColorId == g.Key.ColorId).Select(pr => new Variant_VM()
+                                {
+                                    Dimension = _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description == null ? null : _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description,
+                                    Quantity = pr.StockAmount.ToString(),
+                                }).ToList(),
+                            };
+                var models = await query.ToListAsync();
 
-                return models.Select(dto => new ProductDetail_VM
+                return models;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new Exception($"GetProductDetail method failed: {ex.Message}", ex);
+                return null;
+              
+            }
+        }
+
+        public async Task<List<ProductPreviewCard_VM>> GetProductCardsPreview(string? stockCode)
+        {
+            List<Brand> brands = new List<Brand>();
+            List<ProductPreviewCard_VM> previewCards = new List<ProductPreviewCard_VM>();
+            brands = _c.Brands.ToList();
+
+            Random random = new Random(); // Rasgele sıralama için rastgele sayı üreteci oluşturun
+
+            foreach (var brand in brands)
+            {
+                ProductPreviewCard_VM previewCard = new ProductPreviewCard_VM();
+                previewCard.Brand = brand.Description;
+
+                // Markaya ait tüm fotoğraf URL'lerini alın (tekrar edenleri çıkartın)
+                var allUrls = (from ph in _c.Photos
+                               join pp in _c.ProductPhotos on ph.Id equals pp.PhotoId
+                               join p in _c.Products on pp.ProductId equals p.Id
+                               join b in _c.Brands on p.BrandId equals b.Id
+                               where b.Description == brand.Description
+                               select ph.Url
+                              ).Distinct().ToList();
+
+                // Eksik URL sayısını hesaplayın
+                int missingCount = 4 - allUrls.Count;
+
+                if (missingCount > 0)
                 {
-                    StockCode = dto.StockCode,
-                    Description = dto.Description,
-                    Color = dto.Color,
-                    NormalPrice = dto.NormalPrice,
-                    PurchasePrice = dto.PurchasePrice,
-                    DiscountedPrice = dto.DiscountedPrice,
-                    Brand = dto.Brand,
-                    PhotoUrl = dto.PhotoUrl == null ? null : JsonConvert.DeserializeObject<List<Photo_VM>>(dto.PhotoUrl),
-                    Variations = JsonConvert.DeserializeObject<List<Variant_VM>>(dto.Variations)
-                }).ToList();
+                    // Eksik URL'leri mevcut URL'lerden rasgele seçerek doldurun
+                    var missingUrls = allUrls.OrderBy(u => random.Next()).Take(missingCount);
+                    allUrls.AddRange(missingUrls);
+                }
+
+                // Tüm URL'leri rasgele sırayla karıştırın
+                var shuffledUrls = allUrls.OrderBy(u => random.Next()).ToList();
+
+                // En fazla 4 URL alın
+                var selectedUrls = shuffledUrls.Take(4).ToList();
+
+                previewCard.Photos = selectedUrls.Select(url => new Photo_VM { Url = url }).ToList();
+
+                previewCards.Add(previewCard);
+            }
+
+            // Şimdi previewCards listesi, her bir marka için en fazla 4 rasgele sıralanmış ve eksik olanları doldurulmuş fotoğraf URL'sini içerir.
+
+
+
+            try
+            {
+
+                return previewCards;
             }
             catch (Exception ex)
             {
                 return null;
-                throw new Exception($"GetProductDetail method failed: {ex.Message}", ex);
+                throw new Exception($"GetProductCards method failed: {ex.Message}", ex);
             }
         }
 
@@ -100,7 +186,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
                             StockCode = g.Key.StockCode,
                             Description = g.Key.Description,
                             CoverLetter = g.Key.CoverLetter,
-                            PhotoUrl = g.FirstOrDefault(x => x.pp != null && x.pp.IsFirstPhoto == true).ph.Url ==null ?  "" : g.FirstOrDefault(x => x.pp != null && x.pp.IsFirstPhoto == true).ph.Url, // İlk "IsFirstPhoto" true olan resmi al
+                            PhotoUrl = g.FirstOrDefault(x => x.pp != null && x.pp.IsFirstPhoto == true).ph.Url == null ? "" : g.FirstOrDefault(x => x.pp != null && x.pp.IsFirstPhoto == true).ph.Url, // İlk "IsFirstPhoto" true olan resmi al
                             Brand = g.Key.BrandDescription,
                             NormalPrice = g.Key.NormalPrice,
                             PurchasePrice = g.Key.PurchasePrice,
@@ -144,10 +230,9 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
         public async Task<bool> AddProduct(ProductAdd_DTO productDto, bool CheckStockCode, bool addCategory, bool IsNew)
         {
-            using var transaction = _c.Database.BeginTransaction(); // Veritabanı işlemi başlatılır
             try
             {
-             
+
 
                 bool response = await CheckProductByStockCode(productDto.StockCode);
 
@@ -198,9 +283,9 @@ namespace GooleAPI.Persistance.Services.ProductsService
                         {
                             List<Product>? addedProducts = await _pr.Table.Where(p => p.StockCode == productDto.StockCode).ToListAsync();
                             if (addCategory)
-                                
+
                             {
-                                
+
                                 await AddCategoryToProduct(addedProducts, productDto.CategoryIdList);
                                 if (addedProducts != null)
                                     await _c.SaveChangesAsync();
@@ -222,12 +307,12 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
 
                     }
-                    await transaction.CommitAsync();
+
                     return true;
                 }
                 else
                 {
-                   
+
                     throw new Exception("Aynı Stok Koduna Ait Ürün Bulunmaktadır");
                 }
 
@@ -235,7 +320,8 @@ namespace GooleAPI.Persistance.Services.ProductsService
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+
+                Console.WriteLine(ex.Message);
                 return false;
                 throw new Exception($"AddProduct method failed: {ex.Message}", ex);
 
@@ -356,7 +442,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
             }
         }
 
-        public async Task<List<ProductVariation_VM>> GetVartiationsList(GetVariationsIdListCommandModel model)
+        public async Task<List<ProductVariation_VM>> GetVariationsList(GetVariationsIdListCommandModel model)
         {
             var query = from p in _c.Products
                         join pc in _c.ProductCategories on p.Id equals pc.ProductId
@@ -373,7 +459,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
                             Id = g.Key.CategoryId,
                             CategoryTypeId = -1
                         };
-           
+
             try
             {
 
@@ -462,14 +548,14 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
                 await _c.ProductCategories.AddRangeAsync(productCategoryList);
                 await _c.SaveChangesAsync();
-                await transaction.CommitAsync();
+                transaction.Commit();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                await transaction.RollbackAsync();
+                transaction.Rollback();
+                Console.WriteLine(ex.Message);
             }
-            
+
         }
 
         public async Task<bool> CheckProductByStockCode(string stockCode)
@@ -573,7 +659,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
         public async Task<bool> UploadProductPhotos(UploadProductPhotoCommandModel model)
         {
-            using var transaction = _c.Database.BeginTransaction(); 
+            using var transaction = _c.Database.BeginTransaction();
             try
             {
                 List<Photo> photos = new List<Photo>();
@@ -647,12 +733,12 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
                 //daha sonra productsPhotos a kayıt edicek
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 throw;
             }
-            
+
         }
 
         public async Task<bool> DeleteProductPhotoByPhotoId(DeleteProductPhotoByIdCommandModel model)
@@ -662,7 +748,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
             Photo? photo = await _c.Photos.FirstOrDefaultAsync(photo => photo.Id == model.PhotoId);
             if (photo != null)
             {
-                var  response = await _ph.RemoveAsync(photo.Id);
+                var response = await _ph.RemoveAsync(photo.Id);
                 return true;
             }
             else
@@ -672,15 +758,15 @@ namespace GooleAPI.Persistance.Services.ProductsService
             }
 
 
-         
+
         }
 
         public async Task<bool> DeleteProductCard(ProductCard_DTO model)
         {
             List<Product>? products = await _c.Products.Where(p => p.ColorId == model.ColorId && p.StockCode == model.StockCode).ToListAsync();
-            if(products!= null && products.Count > 0)
+            if (products != null && products.Count > 0)
             {
-               var response = await   _pw.RemoveRange(products);
+                var response = await _pw.RemoveRange(products);
                 if (response)
                 {
                     return true;
@@ -698,19 +784,21 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
         public async Task<bool> UpdateProductStockById(UpdateProductStockByIdComandModel model)
         {
-           Product? product = await _c.Products.FirstOrDefaultAsync(p => p.Id == model.ProductId);  
+            Product? product = await _c.Products.FirstOrDefaultAsync(p => p.Id == model.ProductId);
             if (product != null)
             {
                 product.StockAmount = model.StockAmount;
-                var response =  await _pw.Update(product);
+                var response = await _pw.Update(product);
                 if (response)
                 {
                     return true;
-                }else
+                }
+                else
                 { return false; }
 
-                
-            }else
+
+            }
+            else
             { return false; }
         }
 
@@ -796,7 +884,9 @@ namespace GooleAPI.Persistance.Services.ProductsService
                 await transaction.RollbackAsync();
                 throw;
             }
-            
+
         }
+
+
     }
 }

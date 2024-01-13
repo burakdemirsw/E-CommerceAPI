@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace GoogleAPI.Domain.Models.User.CommandModel
 {
-    public class AssingRoleEndpointCommandRequest
+    public class AssignRoleToUserCommandRequest
     {
+        public int UserId { get; set; }
         public List<Role_VM> Roles { get; set; }
-        public string EndpointCode { get; set; }
     }
 }

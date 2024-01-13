@@ -1,4 +1,5 @@
-using Microsoft.Data.SqlClient;
+using GoogleAPI.Domain.Entities.User;
+using GooleAPI.Application.IRepositories.UserAndCommunication;
 using Microsoft.IdentityModel.Tokens;
 using Serilog.Context;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,7 +17,7 @@ public class LogUserNameMiddleware
         _configuration = configuration;
     }
 
-    public async Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext context, IUserReadRepository userReadRepository)
     {
         try
         {
@@ -31,17 +32,26 @@ public class LogUserNameMiddleware
 
                     // JWT tokenýný çözümle
                     var claims = GetClaimsFromJwtToken(jwtToken);
-
+                    if (claims == null)
+                    {
+                        await next(context);
+                        return;
+                    }
                     // Elde edilen claim bilgilerini loglamak için kullanabilirsiniz
                     if (claims.Count > 0)
                     {
-                        LogContext.PushProperty("UserName", claims.First().ToString().Split("name:")[1]);
+                        var email = claims.FirstOrDefault(c => c.Type.Contains("claims/name"))?.Value;
+                        User? user = userReadRepository.Table.FirstOrDefault(u => u.Email == email);
+                        //Console.WriteLine(user.RefreshToken);
+                        LogContext.PushProperty("UserName", user.Email);
                         await next(context);
+                        return;
                     }
                     else
                     {
                         LogContext.PushProperty("UserName", Guid.NewGuid().ToString());
                         await next(context);
+                        return;
                     }
 
 
@@ -54,45 +64,53 @@ public class LogUserNameMiddleware
                 await next(context);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
-            
+
             await next(context);
         }
         // JWT tokený "Authorization" baþlýðý altýnda gelebilir, bu yüzden kontrol edelim
-       
 
-     
+
+
 
     }
 
     public List<Claim> GetClaimsFromJwtToken(string jwtToken)
     {
-        // JWT tokenýný çözümlemek için gerekli anahtar ve ayarlarý hazýrlayýn
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]));
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        // Tokený doðrula ve çözümle
-        var principal = tokenHandler.ValidateToken(jwtToken, new TokenValidationParameters
+        try
         {
-            ValidateIssuer = true,
-            ValidIssuer = _configuration["Token:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = _configuration["Token:Audience"],
-            IssuerSigningKey = securityKey,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero // Tokenýn hala geçerli olduðunu kontrol etmek için
-        }, out SecurityToken validatedToken);
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Token:SecurityKey"]));
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-        if (validatedToken is not JwtSecurityToken jwtSecurityToken)
+            // Tokený doðrula ve çözümle
+            var principal = tokenHandler.ValidateToken(jwtToken, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Token:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _configuration["Token:Audience"],
+                IssuerSigningKey = securityKey,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero // Tokenýn hala geçerli olduðunu kontrol etmek için
+            }, out SecurityToken validatedToken);
+
+            if (validatedToken is not JwtSecurityToken jwtSecurityToken)
+            {
+                throw new SecurityTokenException("Invalid JWT token.");
+            }
+
+            // JWT tokenýndan "claims" alanýný alýn
+            var claims = principal.Claims.ToList();
+
+            return claims;
+        }
+        catch (Exception)
         {
-            throw new SecurityTokenException("Invalid JWT token.");
+            return null;
+
         }
 
-        // JWT tokenýndan "claims" alanýný alýn
-        var claims = principal.Claims.ToList();
-
-        return claims;
     }
 }

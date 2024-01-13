@@ -1,13 +1,17 @@
 using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Models.Personal.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.IPersonal;
+using GooleAPI.Application.Consts;
+using GooleAPI.Application.CustomAttributes;
+using GooleAPI.Application.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAPI.API.Controllers
 {
     [Route("api/personals")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes ="Admin")]
+    [Authorize(AuthenticationSchemes = "Admin")]
     public class PersonalsController : ControllerBase
     {
         private readonly IPersonalService _personalService;
@@ -18,6 +22,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpGet("get")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Reading, Definition = "Get Personals")]
         public async Task<ActionResult<IEnumerable<Personal_VM>>> GetPersonals(int id)
         {
             try
@@ -32,6 +37,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("add")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Writing, Definition = "Add Personal")]
         public async Task<ActionResult<Menu>> AddPersonal(Personal_VM model)
         {
             try
@@ -53,6 +59,8 @@ namespace GoogleAPI.API.Controllers
             }
         }
         [HttpPost("update")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Updating
+            , Definition = "Update Personal")]
         public async Task<ActionResult<Menu>> UpdatePersonal(Personal_VM model)
         {
             try
@@ -77,6 +85,8 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpDelete("Delete/{id}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Deleting
+            , Definition = "Delete Personal")]
         public async Task<IActionResult> DeletePersonal(int id)
         {
             try

@@ -13,5 +13,7 @@ namespace GooleAPI.Application.Abstractions.IServices.Authorization
     {
         public Task<bool> AssignRoleEndpointAsync(AssignRoleEndpointCommandRequest model);
         public Task<List<Role_VM>> GetRolesToEndpointAsync(GetRolesToEndpointQueryRequest model);
+
+
     }
 }

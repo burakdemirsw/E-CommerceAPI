@@ -17,27 +17,32 @@ namespace GoogleAPI.API.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
-        private readonly ILogger <IProductService> _logger;
-        public ProductsController(IProductService productService,  ILogger<IProductService> logger)
+        private readonly ILogger<IProductService> _logger;
+        public ProductsController(IProductService productService, ILogger<IProductService> logger)
         {
             _productService = productService;
             _logger = logger;
         }
 
         [HttpGet("GetProductVariation")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Variations By Filter")]
         public async Task<IActionResult> GetVariationsByFilter(string stockCode)
         {
             var models = await _productService.GetVariationsByFilter(stockCode);
             return Ok(models);
         }
 
-        [HttpGet("GetProductDetail/{brandName}")]
-        public async Task<IActionResult> GetProductDetail(string brandName)
+        //Bu alan client tarafından kullanılır marka ya da ürün kartına tıklandığında gelicek olan model buradan çağırılır.
+        [HttpGet("get-products-by-brandName/{brandName}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Products By Brand Name")]
+        public async Task<IActionResult> GetProductsByBrandName(string brandName)
         {
-            var models = await _productService.GetProductDetail(brandName);
+            var models = await _productService.GetProductsByBrandName(brandName);
             return Ok(models);
         }
-
+        //Bu alan admin panel  kullanılır ürün listeleme sayfasına gelicek olan  model buradan çağırılır.
         [HttpPost("GetProductCards")]
         [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Cards")]
@@ -49,7 +54,19 @@ namespace GoogleAPI.API.Controllers
             return Ok(models);
         }
 
-        
+        [HttpPost("get-product-cards-preview")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Cards Preview")]
+
+        public async Task<IActionResult> GetProductCardsPreview(string? stockCode)
+        {
+            _logger.LogInformation("GetProductCardsPreview Çekildi");
+            var models = await _productService.GetProductCardsPreview(stockCode);
+            return Ok(models);
+        }
+
+
+
         [HttpPost("GetProductCardsByBrandId")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Cards By BrandId")]
         public async Task<IActionResult> GetProductCardsByBrandId(string? brandId)
@@ -57,11 +74,12 @@ namespace GoogleAPI.API.Controllers
             var models = await _productService.GetProductCardsByBrandId(brandId);
             return Ok(models);
         }
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Add Product")]
         [HttpPost("AddProduct")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Add Product")]
         public async Task<IActionResult> AddProduct(ProductAdd_DTO productDto)
         {
-            var response = await _productService.AddProduct(productDto,true,true, true);
+            var response = await _productService.AddProduct(productDto, true, true, true);
 
             if (response)
             {
@@ -73,14 +91,15 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get VartiationsList")]
-        [HttpPost("GetVartiationsList")]
-        public async Task<ActionResult<List<ProductVariation_VM>>> GetVartiationsList(GetVariationsIdListCommandModel model)
+        [HttpPost("get-variations-list")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Variations List")]
+        public async Task<ActionResult<List<ProductVariation_VM>>> GetVariationsList(GetVariationsIdListCommandModel model)
         {
 
             try
             {
-                List<ProductVariation_VM> response = await _productService.GetVartiationsList(model);
+                List<ProductVariation_VM> response = await _productService.GetVariationsList(model);
 
                 if (response != null)
                 {
@@ -98,8 +117,9 @@ namespace GoogleAPI.API.Controllers
             }
 
         }
-       
+
         [HttpGet("CheckProductByStockCode/{stockCode}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Check Product By StockCode")]
         public async Task<IActionResult> CheckProductByStockCode(string stockCode)
         {
@@ -114,7 +134,7 @@ namespace GoogleAPI.API.Controllers
 
                 throw;
             }
-           
+
         }
         [HttpPost("update")]
         [Authorize(AuthenticationSchemes = "Admin")]
@@ -141,6 +161,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("upload-photoduct-photos")]
+        [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Writing, Definition = "Upload Product Photos")]
         public async Task<ActionResult<bool>> UploadProductPhotos(UploadProductPhotoCommandModel model)
         {
@@ -163,15 +184,16 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Photos")]
         [HttpPost("get-product-photos")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Photos")]
         public async Task<ActionResult<List<GetProductPhotoResponse>>> GetProductPhotos(GetProductPhotoCommandModel model)
         {
             try
             {
                 var result = await _productService.GetProductPhotos(model);
 
-                if (result!=null)
+                if (result != null)
                 {
                     return Ok(result);
                 }
@@ -261,6 +283,7 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpPost("get-categories-of-product")]
+        [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Categories Of Product")]
         public async Task<ActionResult<CategoriesList_VM>> GetCategoriesOfProduct(GetVariationsIdListCommandModel model)
         {
@@ -268,7 +291,7 @@ namespace GoogleAPI.API.Controllers
             {
                 List<CategoriesList_VM>? list = await _productService.GetCategoriesOfProduct(model.StockCode);
 
-                if (list!=null)
+                if (list != null)
                 {
                     return Ok(list);
                 }

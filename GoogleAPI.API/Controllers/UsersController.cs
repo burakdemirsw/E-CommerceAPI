@@ -1,13 +1,9 @@
-
-using GoogleAPI.Domain.Entities;
-using GoogleAPI.Domain.Models.Personal.ViewModel;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.Filters;
 using GoogleAPI.Domain.Models.User.ResponseModel;
 using GoogleAPI.Domain.Models.User.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.Authorization;
-using GooleAPI.Application.Abstractions.IServices.IAuthentication;
 using GooleAPI.Application.Abstractions.IServices.IUser;
 using GooleAPI.Application.Abstractions.IServices.Role;
 using GooleAPI.Application.Consts;
@@ -26,16 +22,16 @@ namespace GoogleAPI.API.Controllers
         private readonly IRoleService _roleService;
         private readonly IAuthorizationEndpointService _authorizationEndpointService;
 
-        public UsersController(IUserService userService,IRoleService roleService, IAuthorizationEndpointService authorizationEndpointService)
+        public UsersController(IUserService userService, IRoleService roleService, IAuthorizationEndpointService authorizationEndpointService)
         {
             _userService = userService;
             _roleService = roleService;
             _authorizationEndpointService = authorizationEndpointService;
-  
+
         }
 
         [HttpPost("register")]
-       // [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Register User")]
+        // [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Register User")]
 
         public async Task<ActionResult<bool>> Register(UserRegister_VM model)
         {
@@ -86,13 +82,13 @@ namespace GoogleAPI.API.Controllers
 
         [HttpPost("login")]
         //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Reading, Definition = "Login")]
-        public async Task<ActionResult<Token>> Login(UserLoginCommandModel model)
+        public async Task<ActionResult<UserClientInfoResponse>> Login(UserLoginCommandModel model)
         {
-            Token token = await _userService.Login(model);
+            UserClientInfoResponse userClientInfoResponse = await _userService.Login(model);
 
-            if (token != null)
+            if (userClientInfoResponse != null)
             {
-                return Ok(token);
+                return Ok(userClientInfoResponse);
             }
             else
             {
@@ -117,24 +113,18 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-        [HttpPost("RefreshToken")]
+        [HttpPost("refresh-token")]
         [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Refresh Token")]
-        public async Task<IActionResult> RefreshToken(
+        public async Task<ActionResult<UserClientInfoResponse>> RefreshToken(
             [FromBody] RefreshTokenCommandModel RefreshToken
         )
         {
-            RefreshTokenCommandResponse result = await _userService.RefreshTokenLogin(
+            UserClientInfoResponse result = await _userService.RefreshTokenLogin(
                 RefreshToken.RefreshToken
             );
-            if (result.State == true)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return Ok(result);
-            }
+
+            return Ok(result);
             //return BadRequest(result);
         }
 
@@ -256,13 +246,42 @@ namespace GoogleAPI.API.Controllers
             var response = await _authorizationEndpointService.GetRolesToEndpointAsync(rolesToEndpointQueryRequest);
             return Ok(response);
         }
-        [HttpPost("assing-role-endpoint")]
+        [HttpPost("assing-role-endpoint")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
         public async Task<IActionResult> AssignRoleEndpoint(AssignRoleEndpointCommandRequest assignRoleEndpointCommandRequest)
         {
             assignRoleEndpointCommandRequest.Type = typeof(Program);
             var response = await _authorizationEndpointService.AssignRoleEndpointAsync(assignRoleEndpointCommandRequest);
             return Ok(response);
         }
+
+        [HttpPost("assing-role-to-user")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        public async Task<IActionResult> AssignRoleToUserAsync(AssignRoleToUserCommandRequest model)
+        {
+            var response = await _userService.AssignRoleToUserAsync(model);
+            if (response)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(model);
+            }
+        }
+
+        [HttpGet("get-roles-of-user/{id}")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        public async Task<IActionResult> GetRolesOfUser(int id)
+        {
+            List<Role_VM> roleList = await _userService.GetRolesOfUser(id);
+            if (roleList.Count > 0)
+            {
+                return Ok(roleList);
+            }
+            else
+            {
+                return BadRequest(id);
+            }
+        }
+
 
     }
 }
