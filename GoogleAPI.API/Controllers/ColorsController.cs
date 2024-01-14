@@ -1,6 +1,7 @@
 using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Models.Product.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.IColor;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAPI.API.Controllers

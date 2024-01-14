@@ -12,6 +12,8 @@ using GooleAPI.Application.IRepositories;
 using GooleAPI.Application.IRepositories.UserAndCommunication;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using ZXing.Aztec.Internal;
+using Token = GoogleAPI.Domain.Models.User.Token;
 
 namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 {
@@ -345,20 +347,22 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                     );
                 response.State = true;
                 response.Token = token;
-                response.Token.RefreshToken = token.RefreshToken;
-                _response.RefreshTokenCommandModel = response;
+         
+                _response.RefreshTokenCommandResponse = response;
                 _response.UserId = user.Id;
-                _response.BasketId = await _orderService.GetBasket(user.Id);
                 _response.Mail = user.Email;
+                _response.BasketId = await _orderService.GetBasket(user.Id);
+                _response.Token = token;
             }
             else
             {
                 response.State = false;
                 response.Token = null;
-                _response.RefreshTokenCommandModel = response;
+                _response.RefreshTokenCommandResponse = null;
                 _response.UserId = user.Id;
-                _response.BasketId = await _orderService.GetBasket(user.Id);
                 _response.Mail = user.Email;
+                _response.BasketId = await _orderService.GetBasket(user.Id);
+                _response.Token = null;
             }
 
             return _response;

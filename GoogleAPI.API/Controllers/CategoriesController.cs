@@ -15,7 +15,7 @@ namespace GoogleAPI.API.Controllers
 {
     [Route("api/categories")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = "Admin")]
+    //[Authorize(AuthenticationSchemes = "Admin")]
     public class MainCategorysController : ControllerBase
     {
         private readonly ICategoryService _categoryService;

@@ -48,7 +48,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("update")]
-        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User")]   
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User")]   
         public async Task<ActionResult<bool>> Update(UserRegister_VM model)
         {
             bool response = await _userService.Update(model);
@@ -65,7 +65,7 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpPost("add-user-address")]
-        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Add Address")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Add Address")]
         public async Task<ActionResult<bool>> AddAddress(AddUserAddressCommandModel model)
         {
             bool response = await _userService.AddUserAddress(model);
@@ -81,6 +81,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("login")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
         //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Reading, Definition = "Login")]
         public async Task<ActionResult<UserClientInfoResponse>> Login(UserLoginCommandModel model)
         {
@@ -114,8 +115,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        [Authorize(AuthenticationSchemes = "Admin")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Refresh Token")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Refresh Token")]
         public async Task<ActionResult<UserClientInfoResponse>> RefreshToken(
             [FromBody] RefreshTokenCommandModel RefreshToken
         )

@@ -2,6 +2,7 @@ using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Models.Product.ViewModel;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.IRepositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAPI.API.Controllers

@@ -12,6 +12,6 @@ namespace GoogleAPI.Domain.Models.User.ResponseModel
         public int UserId { get; set; }
         public string Mail { get; set; }
         public int? BasketId { get; set; }
-        public RefreshTokenCommandResponse? RefreshTokenCommandModel { get; set; }
+        public RefreshTokenCommandResponse? RefreshTokenCommandResponse { get; set; }
     }
 }

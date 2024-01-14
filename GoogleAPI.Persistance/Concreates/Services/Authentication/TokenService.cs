@@ -33,7 +33,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Authentication
 
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
-            token.Expiration = DateTime.UtcNow.AddMinutes(minute);
+            token.Expiration = DateTime.Now.AddMinutes(minute);
             JwtSecurityToken securityToken =
                 new(
                     audience: _configuration["Token:Audience"],
