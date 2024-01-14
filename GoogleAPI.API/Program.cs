@@ -95,10 +95,13 @@ builder.Services.AddCors(options =>
                  "http://localhost:7180",          
                 "http://localhost:4200",
                 "http://localhost:4203",
+                 "http://localhost:4202",
                 "http://192.168.2.36:7180",
                 "http://192.168.2.36:4203",
                 "http://192.168.2.36:4200",
+                 "http://192.168.2.36:4202",
                 "http://212.156.46.206:4200",
+                 "http://212.156.46.206:4202",
                 "http://212.156.46.206:7180",
                 "http://212.156.46.206:4203","*") // Yýldýz (*) kullanarak herhangi bir kaynaða izin verebilirsiniz.
              .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
