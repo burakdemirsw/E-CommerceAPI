@@ -12,6 +12,13 @@ namespace GoogleAPI.Domain.Entities
     {
         public string? Description { get; set; }
     }
+    public class Country_VM
+    {
+        public int Id { get; set; }
+        public string? Description { get; set; }
+    }
+
+
     public class Province : BaseEntity //il
     {
         public string? Description { get; set; }
@@ -21,6 +28,18 @@ namespace GoogleAPI.Domain.Entities
         public int CountryId { get; set; }
 
     }
+
+    public class Province_VM 
+    {
+        public int Id { get; set; }
+
+        public string? Description { get; set; }
+
+    
+        public int CountryId { get; set; }
+
+    }
+
     public class District : BaseEntity //ilçe
     {
 
@@ -30,6 +49,15 @@ namespace GoogleAPI.Domain.Entities
         [ForeignKey(nameof(Province))]
         public int ProvinceId { get; set; }
     }
+    public class District_VM 
+    {
+        public int Id { get; set; }
+        public string? Description { get; set; }
+
+
+        public int ProvinceId { get; set; }
+
+    }
     public class Neighborhood : BaseEntity //mahalle
     {
         public string? Description { get; set; }
@@ -37,6 +65,16 @@ namespace GoogleAPI.Domain.Entities
         public District District { get; set; }
         [ForeignKey(nameof(District))]
         public int DistrictId { get; set; }
+    }
+    public class Neighborhood_VM 
+    {
+        public int Id { get; set; }
+
+        public string? Description { get; set; }
+
+
+        public int DistrictId { get; set; }
+
     }
 }
 
