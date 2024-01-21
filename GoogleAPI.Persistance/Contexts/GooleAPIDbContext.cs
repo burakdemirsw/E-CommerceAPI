@@ -69,6 +69,14 @@ namespace GoogleAPI.Persistance.Contexts
 
 
         }
+        public DbSet<Country>? Countries { get; set; }
+
+        public DbSet<Province>? Provinces { get; set; }
+
+        public DbSet<District>? Districts { get; set; }
+
+        public DbSet<Neighborhood>? Neighborhoods { get; set; }
+
         public DbSet<Menu>? Menus { get; set; }
         public DbSet<Endpoint>? Endpoints { get; set; }
         public DbSet<RoleUser>? RoleUsers { get; set; }

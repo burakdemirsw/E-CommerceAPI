@@ -5,6 +5,7 @@ using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Order.ViewModel;
+using GoogleAPI.Domain.Models.Response;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
 using GooleAPI.Application.IRepositories;
@@ -161,14 +162,32 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             }
         }
 
-        public async Task<List<OrderList_VM>> GetOrders(OrderListFilterCommandModel? model)
+        public async Task<ResponseModel<OrderList_VM>> GetOrders(GetOrderListFilterCommandModel? model)
         {
             List<OrderList_VM> orderList = new List<OrderList_VM>();
-            List<Domain.Entities.Order> orders = new List<Domain.Entities.Order>();
             IQueryable<Domain.Entities.Order> query = _or.Table.AsQueryable();
+           
 
-            List<Domain.Entities.Order> orders2 = await _or.Table.OrderByDescending(o => o.CreatedDate).Take(100).ToListAsync();
-            foreach (var o in orders2)
+
+            if (model.OrderNo != Guid.Empty)
+            {
+                query = query.Where(o => (o.OrderNo == model.OrderNo) );
+            }
+            if (model.Id != 0)
+            {
+                query = query.Where(o => o.Id == model.Id);
+            }
+            if (model.BaketId != 0)
+            {
+                query = query.Where(o=> o.BasketId == model.BaketId);
+            }
+            List<Domain.Entities.Order> orders = await query
+               
+                .Skip((model.Pagination.Page - 1) * model.Pagination.Size)
+                .Take(model.Pagination.Size)
+                 .OrderByDescending(o => o.Id)
+                .ToListAsync();
+            foreach (var o in orders)
             {
                 Domain.Models.Order.ViewModel.OrderList_VM orderList_VM = new Domain.Models.Order.ViewModel.OrderList_VM();
                 orderList_VM.Id = o.Id;
@@ -181,6 +200,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 orderList_VM.CreatedDate = o.CreatedDate;
                 orderList_VM.Provider = "WhatsApp";
                 orderList_VM.Items = await GetBasketItems(o.BasketId);
+                orderList_VM.BasketId = o.BasketId;
 
                 // TotalValue hesaplama işlemi
                 decimal totalValue = (await (from bi in _context.BasketItems
@@ -197,19 +217,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
                 orderList.Add(orderList_VM);
             }
+            int totalCount = await query.CountAsync();
 
-            return orderList;
-
-
-            //if (model == null)
-            //{
-
-
-            //}
-            //else
-            //{
-            //    return orderList;
-            //}
+            ResponseModel<OrderList_VM> response  = new ResponseModel<OrderList_VM> { Datas = orderList, TotalCount = totalCount };
+            return response;
         }
 
 
@@ -231,7 +242,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                             ph.Url,
                             ColorDescription = c.Description,
                             DimentionDescription = d.Description,
-                            p.NormalPrice
+                            p.NormalPrice,
+                            p.StockCode
                         } into grouped
                         select new BasketItemList_VM
                         {
@@ -239,9 +251,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                             Description = grouped.Key.Description,
                             Quantity = grouped.Sum(item => item.bi.Quantity),
                             PhotoUrl = grouped.Key.Url,
-                            ColorDescription = grouped.Key.Description,
-                            DimentionDescription = grouped.Key.Description,
-                            Price = grouped.Key.NormalPrice
+                            ColorDescription = grouped.Key.ColorDescription,
+                            DimensionDescription = grouped.Key.DimentionDescription,
+                            Price = grouped.Key.NormalPrice,
+                            StockCode = grouped.Key.StockCode
                         };
 
             // Execute the query and populate the BasketItemList_VM list
@@ -278,7 +291,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             UpdateBasketItemCommandResponse updateBasketItemCommandResponse = new UpdateBasketItemCommandResponse();
 
 
-            BasketItem? basketItem = await _biw.Table.FirstOrDefaultAsync(bi => bi.BasketId == model.BasketId);
+            BasketItem? basketItem = await _biw.Table.FirstOrDefaultAsync(bi => bi.BasketId == model.BasketId && bi.Id == model.ProductId);
             if (basketItem != null)
             {
                 basketItem.Quantity = basketItem.Quantity + model.Quantity;
@@ -303,14 +316,17 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 model.BasketId = createBasketResponseModel.BasketId;
 
             }
-
-
-            BasketItem? checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == model.ProductId);
+            Product? product = _context.Products.FirstOrDefault(p=>p.StockCode == model.StockCode && p.DimensionId == model.DimentionId && p.ColorId == model.ColorId);  
+            if(product == null)
+            {
+                throw new Exception("Ürün Bulunamadı");
+            }
+            BasketItem? checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == product.Id);
 
             if (checkBasketItem == null)
             {
                 BasketItem basketItem = new BasketItem();
-                basketItem.ProductId = model.ProductId;
+                basketItem.ProductId = product.Id;
                 basketItem.Quantity = model.Quantity;
                 basketItem.BasketId = model.BasketId;
                 basketItem.CreatedDate = DateTime.Now;

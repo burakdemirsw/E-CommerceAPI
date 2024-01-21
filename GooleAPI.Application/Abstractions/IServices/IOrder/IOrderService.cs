@@ -4,6 +4,7 @@ using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Order.ViewModel;
+using GoogleAPI.Domain.Models.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace GooleAPI.Application.Abstractions.IServices.IOrder
         public Task<bool> CreateOrder(CreateOrderCommandModel model);
         public Task<bool> CompleteOrder(CompleteOrderCommandModel model);
         public Task<bool> DeleteOrder( int id);
-        public Task<List<OrderList_VM>> GetOrders( OrderListFilterCommandModel model);
+        public Task<ResponseModel<OrderList_VM>> GetOrders( GetOrderListFilterCommandModel model);
 
     }
 }

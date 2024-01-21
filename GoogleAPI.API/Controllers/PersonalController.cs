@@ -11,7 +11,7 @@ namespace GoogleAPI.API.Controllers
 {
     [Route("api/personals")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = "Admin")]
+
     public class PersonalsController : ControllerBase
     {
         private readonly IPersonalService _personalService;
@@ -22,6 +22,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpGet("get")]
+
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Reading, Definition = "Get Personals")]
         public async Task<ActionResult<IEnumerable<Personal_VM>>> GetPersonals(int id)
         {
@@ -37,6 +38,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("add")]
+        [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Writing, Definition = "Add Personal")]
         public async Task<ActionResult<Menu>> AddPersonal(Personal_VM model)
         {
@@ -59,6 +61,7 @@ namespace GoogleAPI.API.Controllers
             }
         }
         [HttpPost("update")]
+        [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Updating
             , Definition = "Update Personal")]
         public async Task<ActionResult<Menu>> UpdatePersonal(Personal_VM model)
@@ -85,6 +88,7 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpDelete("Delete/{id}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Personals, ActionType = ActionType.Deleting
             , Definition = "Delete Personal")]
         public async Task<IActionResult> DeletePersonal(int id)

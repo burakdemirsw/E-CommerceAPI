@@ -21,7 +21,9 @@ namespace GoogleAPI.Domain.Models.Order.ViewModel
 
         public int Quantity { get; set; }
 
-        public int? ProductId { get; set; }
+        public string StockCode { get; set; }
+        public int ColorId { get; set; }
+        public int DimentionId { get; set; }
         public int UserId { get; set; }
     }
 }

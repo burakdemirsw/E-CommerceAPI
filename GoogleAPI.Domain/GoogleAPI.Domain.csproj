@@ -24,7 +24,6 @@
     <Folder Include="Models\Personal\Dto\" />
     <Folder Include="Models\Personal\Filters\" />
     <Folder Include="Models\Personal\ResponseModel\" />
-    <Folder Include="Models\Product\Filters\" />
     <Folder Include="Models\User\Dto\" />
   </ItemGroup>
 

@@ -1,7 +1,9 @@
 using GoogleAPI.Domain.Models.Category.ViewModel;
 using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
+using GoogleAPI.Domain.Models.Product.Filters;
 using GoogleAPI.Domain.Models.Product.ViewModel;
+using GoogleAPI.Domain.Models.Response;
 using GooleAPI.Application.Abstractions.IServices.IProduct;
 using GooleAPI.Application.Consts;
 using GooleAPI.Application.CustomAttributes;
@@ -42,15 +44,25 @@ namespace GoogleAPI.API.Controllers
             var models = await _productService.GetProductsByBrandName(brandName);
             return Ok(models);
         }
+
+        [HttpPost("get-single-product-detail")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Single Product Detail")]
+        public async Task<IActionResult> GetSingleProductDetail(ProductCard_DTO model)
+        {
+            var models = await _productService.GetSingleProductDetail(model);
+            return Ok(models);
+        }
+
         //Bu alan admin panel  kullanılır ürün listeleme sayfasına gelicek olan  model buradan çağırılır.
         [HttpPost("GetProductCards")]
         [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Product Cards")]
 
-        public async Task<IActionResult> GetProductCards(string? stockCode)
+        public async Task<ActionResult<ResponseModel<ProductCard_VM>>> GetProductCards(GetProductCardsFilter model)
         {
             _logger.LogInformation("Ürünler Çekildi");
-            var models = await _productService.GetProductCards(stockCode);
+            var models = await _productService.GetProductCards(model);
             return Ok(models);
         }
 

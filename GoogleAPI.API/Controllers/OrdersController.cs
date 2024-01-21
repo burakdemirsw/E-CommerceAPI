@@ -2,6 +2,7 @@ using GoogleAPI.Domain.Models.Category.CommandModel;
 using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ViewModel;
+using GoogleAPI.Domain.Models.Response;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
 using GooleAPI.Application.Consts;
 using GooleAPI.Application.CustomAttributes;
@@ -186,8 +187,9 @@ namespace GoogleAPI.API.Controllers
         [HttpPost("get-orders")]
         [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
-        public async Task<ActionResult<bool>> GetOrders(OrderListFilterCommandModel model)
+        public async Task<ActionResult<ResponseModel<OrderList_VM>>> GetOrders(GetOrderListFilterCommandModel model)
         {
+           
             try
             {
                 var response = await _basketService.GetOrders(model);
@@ -208,7 +210,7 @@ namespace GoogleAPI.API.Controllers
 
         [HttpPost("create-order")]
         [Authorize(AuthenticationSchemes = "Admin")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Create Order")]
         public async Task<ActionResult<bool>> CreateOrder(CreateOrderCommandModel model)
         {
             try

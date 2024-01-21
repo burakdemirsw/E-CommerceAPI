@@ -4,7 +4,9 @@ using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Models.Category.ViewModel;
 using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
+using GoogleAPI.Domain.Models.Product.Filters;
 using GoogleAPI.Domain.Models.Product.ViewModel;
+using GoogleAPI.Domain.Models.Response;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.IProduct;
 using GooleAPI.Application.IRepositories;
@@ -41,7 +43,64 @@ namespace GooleAPI.Persistance.Services.ProductsService
                 throw new Exception($"GetVariationsByFilter method failed: {ex.Message}", ex);
             }
         }
+        //
 
+        public async Task<List<ProductDetail_VM>> GetSingleProductDetail(ProductCard_DTO model)
+        {
+            try
+            {
+                var query = from p in _c.Products
+                            join c in _c.Colors on p.ColorId equals c.Id
+                            join b in _c.Brands on p.BrandId equals b.Id
+                            join pp in _c.ProductPhotos on p.Id equals pp.ProductId into photoGroup
+                            from pp in photoGroup.DefaultIfEmpty() // Left join için kullanılır
+                            join ph in _c.Photos on pp.PhotoId equals ph.Id into photoInfo
+                            from ph in photoInfo.DefaultIfEmpty() // Left join için kullanılır
+                            where p.StockCode == model.StockCode && p.ColorId == model.ColorId
+                            group new { p, pp, ph } by new
+                            {
+                                p.StockCode,
+                                Description = p.Description + "-" + c.Description,
+                                p.CoverLetter,
+                                p.NormalPrice,
+                                p.PurchasePrice,
+                                p.DiscountedPrice,
+                                p.VATRate,
+                                p.IsActive,
+                                p.IsNew,
+                                p.IsFreeCargo,
+                                p.ColorId,
+                                BrandDescription = b.Description
+                            } into g
+                            select new ProductDetail_VM
+                            {
+                                Color = g.Key.ColorId.ToString(),
+                                StockCode = g.Key.StockCode,
+                                Description = g.Key.Description,
+                                Brand = g.Key.BrandDescription,
+                                NormalPrice = g.Key.NormalPrice,
+                                PurchasePrice = g.Key.PurchasePrice,
+                                DiscountedPrice = g.Key.DiscountedPrice,
+                                PhotoUrl = g.Select(item => item.ph.Url).Distinct().Select(url => new Photo_VM { Url = url }).ToList(),
+                                Variations = _c.Products.Where(p => p.StockCode == g.Key.StockCode && p.ColorId == g.Key.ColorId).Select(pr => new Variant_VM()
+                                {
+                                    DimensionDescription = _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description == null ? null : _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description,
+                                    DimensionId = pr.DimensionId,
+                                    Quantity = pr.StockAmount.ToString(),
+                                }).ToList(),
+                            };
+                var models = await query.ToListAsync();
+
+                return models;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new Exception($"GetProductDetail method failed: {ex.Message}", ex);
+                return null;
+
+            }
+        }
         public async Task<List<ProductDetail_VM>> GetProductsByBrandName(string brandName)
         {
             try
@@ -81,7 +140,8 @@ namespace GooleAPI.Persistance.Services.ProductsService
                                 PhotoUrl = g.Select(item => item.ph.Url).Distinct().Select(url => new Photo_VM { Url = url }).ToList(),
                                 Variations = _c.Products.Where(p => p.StockCode == g.Key.StockCode && p.ColorId == g.Key.ColorId).Select(pr => new Variant_VM()
                                 {
-                                    Dimension = _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description == null ? null : _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description,
+                                    DimensionDescription = _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description == null ? null : _c.Dimensions.FirstOrDefault(d => d.Id == pr.DimensionId).Description,
+                                    DimensionId = pr.DimensionId,
                                     Quantity = pr.StockAmount.ToString(),
                                 }).ToList(),
                             };
@@ -153,11 +213,11 @@ namespace GooleAPI.Persistance.Services.ProductsService
             catch (Exception ex)
             {
                 return null;
-                throw new Exception($"GetProductCards method failed: {ex.Message}", ex);
+                throw new Exception($"GetProductCardsPreview method failed: {ex.Message}", ex);
             }
         }
 
-        public async Task<List<ProductCard_VM>> GetProductCards(string? stockCode)
+        public async Task<ResponseModel<ProductCard_VM>> GetProductCards(GetProductCardsFilter model)
         {
             var query = from p in _c.Products
                         join c in _c.Colors on p.ColorId equals c.Id
@@ -203,8 +263,17 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
             try
             {
-                List<ProductCard_VM> list = await query.ToListAsync();
-                return list;
+
+                int totalCount = await query.CountAsync();
+
+                int skipCount = (model.Pagination.Page - 1) * model.Pagination.Size; // Calculate the number of items to skip
+                List<ProductCard_VM> list = await query.Skip(model.Pagination.Size*(model.Pagination.Page-1)).Take(model.Pagination.Size).ToListAsync();
+
+            
+                ResponseModel<ProductCard_VM> response = new ResponseModel<ProductCard_VM>();
+                response.TotalCount = totalCount;
+                response.Datas = list;
+                return response;
             }
             catch (Exception ex)
             {

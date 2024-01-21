@@ -24,7 +24,9 @@ namespace GoogleAPI.Domain.Models.Product.ViewModel
     public class Variant_VM
     {
         public string? Quantity { get; set; }
-        public string? Dimension { get; set; }
+        public string? DimensionDescription { get; set; }
+        public int? DimensionId { get; set; }
+
     }
     public class Photo_VM
     {

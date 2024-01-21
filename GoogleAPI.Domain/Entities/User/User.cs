@@ -29,6 +29,7 @@ namespace GoogleAPI.Domain.Entities.User
         public ICollection<ShippingAddress> ShippingAddresses { get; set; }
 
         public ICollection<BillingAddress> BillingAddresses { get; set; }
+        public string? PhotoUrl { get; set; }
 
 
         // public UserCommunicationInfo? UserCommunucationInfo { get; set; }

@@ -1,8 +1,10 @@
 ﻿using GoogleAPI.Domain.Models.Category.ViewModel;
 using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
+using GoogleAPI.Domain.Models.Product.Filters;
 using GoogleAPI.Domain.Models.Product.ResponseModel;
 using GoogleAPI.Domain.Models.Product.ViewModel;
+using GoogleAPI.Domain.Models.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +17,8 @@ namespace GooleAPI.Application.Abstractions.IServices.IProduct
     {
         Task<List<ProductVariation_VM>> GetVariationsByFilter(string stockCode);
         Task<List<ProductDetail_VM>> GetProductsByBrandName(string brandName);
-        Task<List<ProductCard_VM>> GetProductCards(string? stockCode);
-        Task<List<ProductPreviewCard_VM>> GetProductCardsPreview(string? stockCode);
+        Task<List<ProductDetail_VM>> GetSingleProductDetail(ProductCard_DTO model);
+        Task<ResponseModel<ProductCard_VM>> GetProductCards(GetProductCardsFilter model); Task<List<ProductPreviewCard_VM>> GetProductCardsPreview(string? stockCode);
 
         Task<List<ProductCard_VM>> GetProductCardsByBrandId(string? brandId);
         Task<bool> AddProduct(ProductAdd_DTO productDto,bool checkStockCode,bool addCategory, bool IsNew); //---
