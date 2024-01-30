@@ -1,9 +1,14 @@
 
 using Google.Rpc;
 using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Entities.Address;
+using GoogleAPI.Domain.Entities.User;
+using GoogleAPI.Domain.Models.Address;
+using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Persistance.Contexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoogleAPI.API.Controllers
 {
@@ -328,7 +333,7 @@ namespace GoogleAPI.API.Controllers
 
 
 
-        [HttpGet("get-neigborhoods/{id}")]
+        [HttpGet("get-neighborhoods/{id}")]
         public async Task<ActionResult> GetNeighborhoods(int id)
         {
             if (id == -1)
@@ -351,6 +356,44 @@ namespace GoogleAPI.API.Controllers
                 }).ToList();
                return Ok(models); //return Ok()(models);
             }
+
+        }
+
+        [HttpGet("get-shipping-address/{id}")]
+        public async Task<ActionResult> GetShippingAddress(int id)
+        {
+            ShippingAddress? address =await  _context.ShippingAddresses.FirstOrDefaultAsync(a => a.Id == id);
+            if (address == null)
+            {
+                return NotFound();
+            }
+            var user = _context.Users.FirstOrDefault(u => u.Id == address.UserId);
+
+            AddUserShippingAddressCommandModel model = new AddUserShippingAddressCommandModel
+            {
+                AddressTitle = address?.AddressTitle,
+                AddressPhoneNumber = address?.AddressPhoneNumber,
+                AddressDescription = address?.AddressDescription,
+                CountryId = address?.CountryId,
+                ProvinceId = address?.ProvinceId,
+                DistrictId = address?.DistrictId,
+                NeighborhoodId = address?.NeighborhoodId,
+                PostalCode = address?.PostalCode,
+                IsIndividual = address?.IsIndividual,
+                IsCorporate = address?.IsCorporate,
+                CorparateDescription = address?.CorparateDescription,
+                TaxAuthorityDescription = address?.TaxAuthorityDescription,
+                TaxNo = address?.TaxNo,
+                UserId = address?.UserId,
+                NameSurname = user.FirstName+"-"+user.LastName,
+                CreatedDate = address?.CreatedDate,
+                UpdatedDate = address?.UpdatedDate,
+                // Eðer baþka özellikleriniz varsa, bunlarý da ekleyebilirsiniz.
+            };
+
+
+
+                return Ok(model);
 
         }
 

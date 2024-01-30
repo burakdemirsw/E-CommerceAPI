@@ -22,6 +22,10 @@ namespace GoogleAPI.Domain.Entities
             public int? ColorId { get; set; } // Renk için referans anahtar ++
             public Color Color { get; set; } // Renk ile ilişkiyi temsil eden navigation property
 
+            [ForeignKey(nameof(Supplier))]
+            public int? SupplierId { get; set; } // Renk için referans anahtar ++
+            public Supplier Supplier { get; set; } // Renk ile ilişkiyi temsil eden navigation property
+
      
              [ForeignKey(nameof(Brand))]
             public int? BrandId { get; set; } // Ana Kategoriye referans veren anahtar++
@@ -46,9 +50,9 @@ namespace GoogleAPI.Domain.Entities
             public bool? IsFreeCargo { get; set; }
 
             public bool? Ticket_1 { get; set; }
-        public bool? Ticket_2 { get; set; }
-        public bool? Ticket_3 { get; set; }
-        public ICollection<BasketItem> BasketItems { get; set; }
+            public bool? Ticket_2 { get; set; }
+            public bool? Ticket_3 { get; set; }
+            public ICollection<BasketItem> BasketItems { get; set; }
 
     }
 }

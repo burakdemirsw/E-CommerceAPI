@@ -1,14 +1,19 @@
 ﻿
 using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Entities.User;
+using GoogleAPI.Domain.Models;
 using GoogleAPI.Domain.Models.Category.CommandModel;
 using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Order.ViewModel;
 using GoogleAPI.Domain.Models.Response;
+using GoogleAPI.Domain.Models.User.ViewModel;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
+using GooleAPI.Application.Abstractions.IServices.IUser;
 using GooleAPI.Application.IRepositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -26,13 +31,14 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         IBasketReadRepository _br;
         IBasketItemReadRepository _bir;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public OrderService(IBasketWriteRepository bw,
         IBasketItemWriteRepository biw,
         IBasketReadRepository br,
         IBasketItemReadRepository bir,
         IOrderWriteRepository ow,
-        IOrderReadRepository or, IProductReadRepository pr, GooleAPIDbContext context)
+        IOrderReadRepository or, IProductReadRepository pr, GooleAPIDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _bir = bir;
             _biw = biw;
@@ -42,6 +48,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             _ow = ow;
             _pr = pr;
             _context = context;
+            _httpContextAccessor = httpContextAccessor; 
+        
 
         }
 
@@ -91,6 +99,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         public async Task<int> GetBasket(int userId)
         {
+           
 
             try
             {
@@ -181,6 +190,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             {
                 query = query.Where(o=> o.BasketId == model.BaketId);
             }
+            //if (model.UserId!=0)
+            //{
+            //    query.Include(p => p.Basket).Where(p => p.Basket.UserId == model.UserId);
+            //}
             List<Domain.Entities.Order> orders = await query
                
                 .Skip((model.Pagination.Page - 1) * model.Pagination.Size)
@@ -224,7 +237,6 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
         }
 
 
-
         public async Task<List<BasketItemList_VM>> GetBasketItems(int basketId)
         {
             // Query to retrieve basket items and join them with product information
@@ -257,6 +269,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                             StockCode = grouped.Key.StockCode
                         };
 
+         
             // Execute the query and populate the BasketItemList_VM list
             var basketItemList_VM = await query.ToListAsync(); // Assuming you are using Entity Framework or a similar ORM
 
@@ -359,7 +372,6 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             order.BasketId = model.BasketId;
             order.OrderNo = Guid.NewGuid();
             order.ShippingAddressId = model.ShippingAddressId; //kullanıcı farklı bir fatura adresi verebilir
-            order.BillingAddressId = model.BillingAddressId;    //kullanıcı farklı bir teslimat adresi verebilir
             order.CreatedDate = DateTime.Now;
             order.IsCompleted = true;
             bool response = await _ow.AddAsync(order);
@@ -423,6 +435,141 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             string uniqueValue = BitConverter.ToString(bytes).Replace("-", "").Substring(0, 12);
             return uniqueValue;
         }
+        public async Task<OrderUser_VM> GetOrderUser(int? userId)
+        {
+            if (userId != null)
+            {
+                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user != null)
+                {
+                    OrderUser_VM _user = new OrderUser_VM()
+                    {
+                        UserId = user.Id,
+                        NameSurname = user.FirstName + " " + user.LastName,
+                        PhoneNumber = user.PhoneNumber,
 
+                    };
+
+                    return _user;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+
+        }
+
+        public async Task<UserShippingAddress_VM> GetUserOrderShippingAddres(int basketId)
+        {
+            GoogleAPI.Domain.Entities.Order? order = await _context.Orders.FirstOrDefaultAsync(o => o.BasketId == basketId);
+            if (order != null)
+            {
+                UserShippingAddress_VM? model = await (from a in _context.ShippingAddresses
+                                                       where a.Id == order.ShippingAddressId
+                                                       join c in _context.Countries on a.CountryId equals c.Id
+                                                       join p in _context.Provinces on a.ProvinceId equals p.Id
+                                                       join d in _context.Districts on a.DistrictId equals d.Id
+                                                       join u in _context.Users on a.UserId equals u.Id
+                                                       join n in _context.Neighborhoods on a.NeighborhoodId equals n.Id
+                                                       select new UserShippingAddress_VM
+                                                       {
+                                                           Id = a.Id,
+                                                           UserId = a.UserId,
+                                                           NameSurname = u.FirstName + " " + u.LastName,
+                                                           AddressTitle = a.AddressTitle,
+                                                           AddressDescription = a.AddressDescription,
+                                                           CountryDescripton = c.Description,
+                                                           ProvinceDescripton = p.Description,
+                                                           DistrictDescripton = d.Description,
+                                                           NeighborhoodDescripton = n.Description,
+                                                           IsIndividual = a.IsIndividual,
+                                                           IsCorporate = a.IsCorporate,
+                                                           CorparateDescription = a.CorparateDescription,
+                                                           TaxAuthorityDescription = a.TaxAuthorityDescription,
+                                                           TaxNo = a.TaxNo,
+                                                           PostalCode = a.PostalCode,
+                                                           UpdatedDate = a.UpdatedDate
+                                                       }).FirstOrDefaultAsync();
+
+                Console.WriteLine(model);
+                return model;
+            }
+
+            else
+            {
+                return null;
+            }
+
+
+        }
+
+        public async Task<List<GetOrderDetail_ResponseModel>> GetOrdersOfUser(int userId, int count)
+        {
+
+            List<GetOrderDetail_ResponseModel> models = new List<GetOrderDetail_ResponseModel>();
+            List<Basket> baskets = await _context.Baskets.Where(b => b.UserId == userId).OrderByDescending(b => b.CreatedDate).Take(count).ToListAsync();
+            foreach (var item in baskets)
+            {
+                GetOrderDetail_ResponseModel model = await GetOrderDetail(item.Id);
+                models.Add(model);
+            }
+
+            return models;
+        }
+        public async Task<GetOrderDetail_ResponseModel> GetOrderDetail(int basketId)
+        {
+
+
+            try
+            {
+                Domain.Entities.Basket? basket = await _context.Baskets.FirstOrDefaultAsync(o => o.Id == basketId);
+                if (basket != null)
+                {
+                    GetOrderDetail_ResponseModel response = new GetOrderDetail_ResponseModel();
+                    response.Address = await GetUserOrderShippingAddres(basket.Id);
+                    //response.Items = await GetBasketItems(basket.Id);
+                    response.User = await GetOrderUser(basket.UserId);
+                    GetOrderListFilterCommandModel filter = new GetOrderListFilterCommandModel();
+                    filter.Pagination = new Pagination();
+                    filter.Pagination.Size = 1;
+                    filter.Pagination.Page = 1;
+                    filter.BaketId = basketId;
+
+                    ResponseModel<OrderList_VM> _response = await GetOrders(filter);
+
+                    if (_response.Datas != null)
+                    { 
+                    }
+                    if ( _response.Datas.Count >0)
+                    {
+
+                        response.OrderDetail = _response.Datas.First();
+                    }
+                    else
+                    {
+                        response.OrderDetail = null;
+                    }
+
+                    return response;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message + ex.StackTrace);
+            }
+           
+            
+        }
     }
 }

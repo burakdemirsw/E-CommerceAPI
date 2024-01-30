@@ -37,6 +37,109 @@ namespace GoogleAPI.Persistance.Migrations
                     b.ToTable("EndpointRole");
                 });
 
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Countries");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.District", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProvinceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProvinceId");
+
+                    b.ToTable("Districts");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Neighborhood", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DistrictId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DistrictId");
+
+                    b.ToTable("Neighborhoods");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Province", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CountryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("Provinces");
+                });
+
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Basket", b =>
                 {
                     b.Property<int>("Id")
@@ -52,9 +155,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(6542));
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -87,9 +188,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(6837));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -119,9 +218,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7000));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -152,9 +249,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7128));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -177,37 +272,11 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7278));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.ToTable("Colors");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Country", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7425));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Countries");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Dimension", b =>
@@ -226,42 +295,11 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7596));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Dimensions");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.District", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProvinceId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7713));
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProvinceId");
-
-                    b.ToTable("Districts");
+                    b.ToTable("Dimension");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Endpoint", b =>
@@ -295,15 +333,44 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(7864));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("MenuId");
 
                     b.ToTable("Endpoints");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.MarketPlace", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ApiSecretKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SupplierId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MarketPlace");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Menu", b =>
@@ -322,42 +389,11 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8021));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.ToTable("Menus");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Neighborhood", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DistrictId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8148));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DistrictId");
-
-                    b.ToTable("Neighborhoods");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Order", b =>
@@ -371,14 +407,17 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<int>("BasketId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BillingAddressId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("MarketPlaceId")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("OrderNo")
                         .HasColumnType("uniqueidentifier");
@@ -387,16 +426,14 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8305));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BasketId")
                         .IsUnique();
 
-                    b.HasIndex("BillingAddressId");
+                    b.HasIndex("MarketPlaceId");
 
                     b.HasIndex("ShippingAddressId");
 
@@ -427,9 +464,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8471));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -448,9 +483,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8615));
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Url")
                         .HasColumnType("nvarchar(max)");
@@ -518,6 +551,9 @@ namespace GoogleAPI.Persistance.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("int");
+
                     b.Property<bool?>("Ticket_1")
                         .HasColumnType("bit");
 
@@ -528,9 +564,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8733));
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("VATRate")
                         .HasColumnType("int");
@@ -542,6 +576,8 @@ namespace GoogleAPI.Persistance.Migrations
                     b.HasIndex("ColorId");
 
                     b.HasIndex("DimensionId");
+
+                    b.HasIndex("SupplierId");
 
                     b.ToTable("Products");
                 });
@@ -579,37 +615,13 @@ namespace GoogleAPI.Persistance.Migrations
                     b.ToTable("ProductPhotos");
                 });
 
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Provider", b =>
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Supplier", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(8952));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Providers");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Province", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CountryId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -618,86 +630,11 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(9071));
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountryId");
-
-                    b.ToTable("Provinces");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.User.BillingAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AddressDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AddressName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AddressPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AddressTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CorparateDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("District")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("IsCorporate")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsIndividual")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RowGuid")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TCKN")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TaxAuthorityDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TaxNo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(9198));
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("BillingAddresses");
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.User.Role", b =>
@@ -715,9 +652,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(9376));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -750,42 +685,66 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<string>("AddressDescription")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AddressName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AddressPhone")
+                    b.Property<string>("AddressPhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressTitle")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("City")
+                    b.Property<string>("CorparateDescription")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("CountryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("District")
+                    b.Property<int?>("DistrictId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsCorporate")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsIndividual")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameSurname")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("NeighborhoodId")
+                        .HasColumnType("int");
 
                     b.Property<string>("PostalCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ProvinceId")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("RowGuid")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("TaxAuthorityDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(9495));
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.HasIndex("DistrictId");
+
+                    b.HasIndex("NeighborhoodId");
+
+                    b.HasIndex("ProvinceId");
 
                     b.HasIndex("UserId");
 
@@ -809,11 +768,23 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("IsPasswordTokenUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastCreateNewPasswordEmailDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PasswordTokenEndDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -831,9 +802,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2024, 1, 21, 18, 26, 54, 259, DateTimeKind.Local).AddTicks(9647));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -1080,6 +1049,39 @@ namespace GoogleAPI.Persistance.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.District", b =>
+                {
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.Province", "Province")
+                        .WithMany("Districts")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Province");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Neighborhood", b =>
+                {
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.District", "District")
+                        .WithMany("Neighborhoods")
+                        .HasForeignKey("DistrictId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("District");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Province", b =>
+                {
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.Country", "Country")
+                        .WithMany("Provinces")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Basket", b =>
                 {
                     b.HasOne("GoogleAPI.Domain.Entities.User.User", "User")
@@ -1107,17 +1109,6 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.District", b =>
-                {
-                    b.HasOne("GoogleAPI.Domain.Entities.Province", "Province")
-                        .WithMany()
-                        .HasForeignKey("ProvinceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Province");
-                });
-
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Endpoint", b =>
                 {
                     b.HasOne("GoogleAPI.Domain.Entities.Menu", "Menu")
@@ -1129,17 +1120,6 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("Menu");
                 });
 
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Neighborhood", b =>
-                {
-                    b.HasOne("GoogleAPI.Domain.Entities.District", "District")
-                        .WithMany()
-                        .HasForeignKey("DistrictId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("District");
-                });
-
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Order", b =>
                 {
                     b.HasOne("GoogleAPI.Domain.Entities.Basket", "Basket")
@@ -1147,9 +1127,9 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasForeignKey("GoogleAPI.Domain.Entities.Order", "BasketId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("GoogleAPI.Domain.Entities.User.BillingAddress", "BillingAddress")
+                    b.HasOne("GoogleAPI.Domain.Entities.MarketPlace", "MarketPlace")
                         .WithMany("Orders")
-                        .HasForeignKey("BillingAddressId")
+                        .HasForeignKey("MarketPlaceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("GoogleAPI.Domain.Entities.User.ShippingAddress", "ShippingAddress")
@@ -1159,7 +1139,7 @@ namespace GoogleAPI.Persistance.Migrations
 
                     b.Navigation("Basket");
 
-                    b.Navigation("BillingAddress");
+                    b.Navigation("MarketPlace");
 
                     b.Navigation("ShippingAddress");
                 });
@@ -1181,11 +1161,18 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasForeignKey("DimensionId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("GoogleAPI.Domain.Entities.Supplier", "Supplier")
+                        .WithMany("Products")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Brand");
 
                     b.Navigation("Color");
 
                     b.Navigation("Dimension");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.ProductCategory", b =>
@@ -1226,27 +1213,6 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.Province", b =>
-                {
-                    b.HasOne("GoogleAPI.Domain.Entities.Country", "Country")
-                        .WithMany()
-                        .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Country");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.User.BillingAddress", b =>
-                {
-                    b.HasOne("GoogleAPI.Domain.Entities.User.User", "User")
-                        .WithMany("BillingAddresses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("GoogleAPI.Domain.Entities.User.RoleUser", b =>
                 {
                     b.HasOne("GoogleAPI.Domain.Entities.User.Role", "Role")
@@ -1268,10 +1234,34 @@ namespace GoogleAPI.Persistance.Migrations
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.User.ShippingAddress", b =>
                 {
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.Country", "Country")
+                        .WithMany("ShippingAddresses")
+                        .HasForeignKey("CountryId");
+
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.District", "District")
+                        .WithMany("ShippingAddresses")
+                        .HasForeignKey("DistrictId");
+
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.Neighborhood", "Neighborhood")
+                        .WithMany("ShippingAddresses")
+                        .HasForeignKey("NeighborhoodId");
+
+                    b.HasOne("GoogleAPI.Domain.Entities.Address.Province", "Province")
+                        .WithMany("ShippingAddresses")
+                        .HasForeignKey("ProvinceId");
+
                     b.HasOne("GoogleAPI.Domain.Entities.User.User", "User")
                         .WithMany("ShippingAddresses")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Country");
+
+                    b.Navigation("District");
+
+                    b.Navigation("Neighborhood");
+
+                    b.Navigation("Province");
 
                     b.Navigation("User");
                 });
@@ -1305,6 +1295,32 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("Color");
                 });
 
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Country", b =>
+                {
+                    b.Navigation("Provinces");
+
+                    b.Navigation("ShippingAddresses");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.District", b =>
+                {
+                    b.Navigation("Neighborhoods");
+
+                    b.Navigation("ShippingAddresses");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Neighborhood", b =>
+                {
+                    b.Navigation("ShippingAddresses");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Province", b =>
+                {
+                    b.Navigation("Districts");
+
+                    b.Navigation("ShippingAddresses");
+                });
+
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Basket", b =>
                 {
                     b.Navigation("BasketItems");
@@ -1333,6 +1349,11 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.MarketPlace", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Menu", b =>
                 {
                     b.Navigation("Endpoints");
@@ -1352,9 +1373,9 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("ProductPhotos");
                 });
 
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.User.BillingAddress", b =>
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Supplier", b =>
                 {
-                    b.Navigation("Orders");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.User.Role", b =>
@@ -1370,8 +1391,6 @@ namespace GoogleAPI.Persistance.Migrations
             modelBuilder.Entity("GoogleAPI.Domain.Entities.User.User", b =>
                 {
                     b.Navigation("Baskets");
-
-                    b.Navigation("BillingAddresses");
 
                     b.Navigation("RoleUsers");
 

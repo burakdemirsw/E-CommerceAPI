@@ -15,19 +15,42 @@ namespace GooleAPI.Application.Abstractions.IServices.IUser
 {
     public interface IUserService
     {
+
+        #region BASE
         Task<bool> Register(UserRegister_VM model); 
         Task<UserClientInfoResponse> Login(UserLoginCommandModel model);
         Task<bool> DeleteUser(int Id);
-        Task<bool> AddUserAddress(AddUserAddressCommandModel model);
+         Task<List<UserList_VM>> GetUsers(GetUserFilter? model);
+
+        #endregion
+        #region TOKEN
+
         public Task<bool> Update(UserRegister_VM model);
         Task<bool> UpdateRefreshToken(string refreshToken,DateTime accessTokenDate, int refreshTokenLifeTime, User user);
         
         Task<UserClientInfoResponse> RefreshTokenLogin(string RefreshToken);
-         Task<List<UserList_VM>> GetUsers(GetUserFilter? model);
+        #endregion
+        #region AUTH
+
 
         Task<bool> AssignRoleToUserAsync(AssignRoleToUserCommandRequest model);
         Task<List<Role_VM>> GetRolesOfUser(int id);
         Task<bool> HasRolePermissionToEndpointAsync(int id, string code);
+        #endregion
+        #region USER&ADDRES
+        Task<bool> AddShippingAddressToUser(AddUserShippingAddressCommandModel model);
+        Task<bool> UpdateShippingAddressToUser(AddUserShippingAddressCommandModel model);
+      
+        Task<bool> DeleteUserShippingAddress(int shippingAddressId);
+        Task<List<UserShippingAddress_VM>> GetUserShippingAddresses(int userId);
+     
+        #endregion
+        #region PASSWORD
+        Task SendPasswordResetEmail(string email);
+        Task<bool> ConfirmPasswordToken(string passwordToken);
+        Task<bool> PasswordReset(PasswordRequest_CM model);
+
+        #endregion
 
     }
 }

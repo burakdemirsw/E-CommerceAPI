@@ -28,8 +28,14 @@ namespace GoogleAPI.Domain.Entities.User
         public ICollection<Basket> Baskets { get; set; }
         public ICollection<ShippingAddress> ShippingAddresses { get; set; }
 
-        public ICollection<BillingAddress> BillingAddresses { get; set; }
+        //public ICollection<BillingAddress> BillingAddresses { get; set; }
         public string? PhotoUrl { get; set; }
+
+        public string? PasswordToken { get; set; }
+        public bool? IsPasswordTokenUsed { get; set; }
+        public DateTime? PasswordTokenEndDate { get; set; }
+
+        public DateTime? LastCreateNewPasswordEmailDate { get; set; }
 
 
         // public UserCommunicationInfo? UserCommunucationInfo { get; set; }

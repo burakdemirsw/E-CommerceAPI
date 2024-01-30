@@ -1,4 +1,5 @@
-﻿using GoogleAPI.Domain.Entities.Common;
+﻿using GoogleAPI.Domain.Entities.Address;
+using GoogleAPI.Domain.Entities.Common;
 using NHibernate.UserTypes;
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,38 @@ namespace GoogleAPI.Domain.Entities.User
     public class ShippingAddress : BaseEntity
     {
         public string? AddressTitle { get; set; }
-        public string? AddressName { get; set; }
-        public string? AddressPhone { get; set; }
+        public string? AddressPhoneNumber { get; set; }
         public string? AddressDescription { get; set; }
-        public string? Country { get; set; }
-        public string? City { get; set; }
-        public string? District { get; set; }
+
+        //[ForeignKey(nameof(Country))]  
+        public int? CountryId { get; set; }
+        public Country Country { get; set; }
+
+        //[ForeignKey(nameof(Province))]
+        public int? ProvinceId { get; set; }
+        public Province Province { get; set; }
+        
+
+       // [ForeignKey(nameof(District))]
+        public int? DistrictId { get; set; }
+        public District District { get; set; }
+
+       // [ForeignKey(nameof(Neighborhood))]
+        public int? NeighborhoodId { get; set; }
+        public Neighborhood Neighborhood { get; set; }
+
         public string? PostalCode { get; set; }
         public Guid? RowGuid { get; set; }
  
         public int? UserId { get; set; }
         public User User { get; set; }
+
+        public bool? IsIndividual { get; set; }
+        public bool? IsCorporate { get; set; }
+        public string? CorparateDescription { get; set; }
+        public string? TaxAuthorityDescription { get; set; }
+        public string? TaxNo { get; set; }
+        public string ?  NameSurname { get; set; }
         public ICollection<Order> Orders { get; set; }
 
     }

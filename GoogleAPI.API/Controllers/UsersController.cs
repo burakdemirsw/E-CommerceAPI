@@ -18,9 +18,9 @@ namespace GoogleAPI.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
-        private readonly IAuthorizationEndpointService _authorizationEndpointService;
+         readonly IUserService _userService;
+         readonly IRoleService _roleService;
+         readonly IAuthorizationEndpointService _authorizationEndpointService;
 
         public UsersController(IUserService userService, IRoleService roleService, IAuthorizationEndpointService authorizationEndpointService)
         {
@@ -64,21 +64,8 @@ namespace GoogleAPI.API.Controllers
         }
 
 
-        [HttpPost("add-user-address")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Add Address")]
-        public async Task<ActionResult<bool>> AddAddress(AddUserAddressCommandModel model)
-        {
-            bool response = await _userService.AddUserAddress(model);
-
-            if (response)
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return BadRequest("Adres eklenirken bir hata oluştu.");
-            }
-        }
+       
+       
 
         [HttpPost("login")]
         //[Authorize(AuthenticationSchemes = "Admin")]
@@ -283,6 +270,94 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
+        #region USER&ADDRESS
+        [HttpPost("add-shipping-address-to-user")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Add Shipping Address To User")]
+        public async Task<ActionResult<bool>> AddShippingAddressToUser(AddUserShippingAddressCommandModel model)
+        {
+            bool response = await _userService.AddShippingAddressToUser(model);
 
+            if (response)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest("Adres eklenirken bir hata oluştu.");
+            }
+        }
+
+        [HttpPost("update-shipping-address-to-user")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Update Shipping Address To User")]
+        public async Task<ActionResult<bool>> UpdateShippingAddressToUser(AddUserShippingAddressCommandModel model)
+        {
+            bool response = await _userService.UpdateShippingAddressToUser(model);
+
+            if (response)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest("Adres güncellenirken bir hata oluştu.");
+            }
+        }
+
+        [HttpDelete("delete-shipping-address-to-user/{id}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Delete Shipping Address To User")]
+        public async Task<ActionResult<bool>> DeleteShippingAddressToUser(int id)
+        {
+            bool response = await _userService.DeleteUserShippingAddress(id);
+
+            if (response)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest("Adres silinirken bir hata oluştu.");
+            }
+        }
+
+        [HttpGet("get-shipping-addresses-to-user/{id}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Get Shipping Address To User")]
+        public async Task<ActionResult<List<UserShippingAddress_VM>>> GetShippingAddressToUser(int id)
+        {
+            List<UserShippingAddress_VM> response = await _userService.GetUserShippingAddresses(id);
+
+            if (response.Count > 0)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest("Adres çekilirken bir hata oluştu.");
+            }
+        }
+
+        [HttpGet("send-password-reset-email/{email}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Get Password Reset Email")]
+        public async Task<ActionResult> SendPasswordResetEmail(string email)
+        {
+            await _userService.SendPasswordResetEmail(email);
+            return Ok(true);
+        }
+
+        [HttpGet("confirm-password-token/{token}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Confirm Password Token")]
+        public async Task<ActionResult> ConfirmPasswordToken( string token)
+        {
+            var response = await _userService.ConfirmPasswordToken(token);
+            return Ok(response);
+        }
+
+        [HttpPost("password-reset")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Password Reset")]
+        public async Task<ActionResult> PasswordReset(PasswordRequest_CM model)
+        {
+            var response = await _userService.PasswordReset(model);
+            return Ok(response);
+        }
+        #endregion
     }
 }

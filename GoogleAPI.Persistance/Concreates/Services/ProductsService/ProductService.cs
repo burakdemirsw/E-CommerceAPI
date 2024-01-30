@@ -321,7 +321,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
                                     Description = productDto.Description,
                                     DimensionId = dimension,
                                     ColorId = color,
-                                    // CategoryId = productDto.MainCategoryId,
+                                    SupplierId = productDto.SupplierId,
                                     BrandId = productDto.BrandId,
                                     Explanation = productDto.Explanation,
                                     CoverLetter = productDto.CoverLetter,

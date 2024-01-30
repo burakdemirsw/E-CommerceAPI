@@ -23,6 +23,8 @@ namespace GoogleAPI.Domain.Models.Product.Dto
 
         public int BrandId { get; set; }
 
+        public int SupplierId { get; set; }
+
         public string? Explanation { get; set; }
 
         public string? CoverLetter { get; set; }
@@ -42,9 +44,7 @@ namespace GoogleAPI.Domain.Models.Product.Dto
         public bool? IsNew { get; set; }
 
         public bool? IsFreeCargo { get; set; }
-
         public DateTime? CreatedDate { get; set; }
-
         public DateTime? UpdatedDate { get; set; }
         public bool? Ticket_1 { get; set; }
         public bool? Ticket_2 { get; set; }

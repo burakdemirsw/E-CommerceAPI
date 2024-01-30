@@ -12,7 +12,7 @@ namespace GoogleAPI.Domain.Models.Order.Filters
         public Guid OrderNo { get; set; }
         public int Id { get; set; }
         public int BaketId { get; set; }
-
+        //public int UserId { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime CreatedDate { get; set; }
     }

@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 namespace GoogleAPI.Domain.Entities
 {
-    public class Provider : BaseEntity
+    public class Supplier : BaseEntity
     {
+        public string? Description { get; set; }
+        public ICollection<Product> Products {  get; set; }    
     }
 }

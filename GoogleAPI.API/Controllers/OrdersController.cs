@@ -1,6 +1,7 @@
 using GoogleAPI.Domain.Models.Category.CommandModel;
 using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
+using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Order.ViewModel;
 using GoogleAPI.Domain.Models.Response;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
@@ -16,11 +17,11 @@ namespace GoogleAPI.API.Controllers
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        private readonly IOrderService _basketService;
+        private readonly IOrderService _orderService;
 
-        public OrdersController(IOrderService basketService)
+        public OrdersController(IOrderService orderService)
         {
-            _basketService = basketService;
+            _orderService = orderService;
         }
 
         [HttpGet("get-basket-items/{basketId}")]
@@ -31,7 +32,7 @@ namespace GoogleAPI.API.Controllers
             try
             {
                 // Call the service method to get basket items
-                var basketItems = await _basketService.GetBasketItems(basketId);
+                var basketItems = await _orderService.GetBasketItems(basketId);
 
                 if (basketItems.Count > 0)
                 {
@@ -48,6 +49,59 @@ namespace GoogleAPI.API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpGet("get-order-detail/{basketId}")]
+        [Authorize(AuthenticationSchemes = "Admin")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Order Detail")]
+        public async Task<ActionResult<List<BasketItemList_VM>>> GetOrderDetail(int basketId)
+        {
+            try
+            {
+                // Call the service method to get basket items
+                var basketItems = await _orderService.GetOrderDetail(basketId);
+
+                if (basketItems!=null)
+                {
+                    return Ok(basketItems);
+                }
+                else
+                {
+                    return Ok(basketItems);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions here
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("get-orders-of-user/{userId}/{count}")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get User Orders")]
+        public async Task<ActionResult<List<GetOrderDetail_ResponseModel>>> GetUserOrders(int userId,int count)
+        {
+            try
+            {
+                // Call the service method to get basket items
+                var models = await _orderService.GetOrdersOfUser(userId, count);
+
+                if (models != null)
+                {
+                    return Ok(models);
+                }
+                else
+                {
+                    return Ok(models);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions here
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
 
 
         [HttpDelete("delete-basket/{id}")]
@@ -57,7 +111,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                bool result = await _basketService.DeleteBasket(id);
+                bool result = await _orderService.DeleteBasket(id);
                 if (result)
                 {
                     return Ok(result);
@@ -80,7 +134,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                bool result = await _basketService.DeleteBasketItem(id);
+                bool result = await _orderService.DeleteBasketItem(id);
                 if (result)
                 {
                     return Ok(result);
@@ -103,7 +157,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                int basketId = await _basketService.GetBasket(userId);
+                int basketId = await _orderService.GetBasket(userId);
                 return Ok(basketId);
             }
             catch (Exception ex)
@@ -119,7 +173,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                var response = await _basketService.AddBasket(userId);
+                var response = await _orderService.AddBasket(userId);
                 if (response.State)
                 {
                     return Ok(response.State);
@@ -144,7 +198,7 @@ namespace GoogleAPI.API.Controllers
             try
             {
                 // Call the service method to add the basket item
-                UpdateBasketItemCommandResponse updateBasketItemCommandResponse = await _basketService.AddItemToBasket(model);
+                UpdateBasketItemCommandResponse updateBasketItemCommandResponse = await _orderService.AddItemToBasket(model);
 
                 if (updateBasketItemCommandResponse.State)
                 {
@@ -168,7 +222,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                var response = await _basketService.UpdateBasketItemQuantity(model);
+                var response = await _orderService.UpdateBasketItemQuantity(model);
                 if (response != null)
                 {
                     return Ok(response);
@@ -185,14 +239,14 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("get-orders")]
-        [Authorize(AuthenticationSchemes = "Admin")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
         public async Task<ActionResult<ResponseModel<OrderList_VM>>> GetOrders(GetOrderListFilterCommandModel model)
         {
            
             try
             {
-                var response = await _basketService.GetOrders(model);
+                var response = await _orderService.GetOrders(model);
                 if (response != null)
                 {
                     return Ok(response);
@@ -215,7 +269,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                var response = await _basketService.CreateOrder(model);
+                var response = await _orderService.CreateOrder(model);
                 if (response != null)
                 {
                     return Ok(response);
@@ -238,7 +292,7 @@ namespace GoogleAPI.API.Controllers
         {
             try
             {
-                var response = await _basketService.CompleteOrder(model);
+                var response = await _orderService.CompleteOrder(model);
                 if (response != null)
                 {
                     return Ok(response);
@@ -263,7 +317,7 @@ namespace GoogleAPI.API.Controllers
             try
             {
 
-                var response = await _basketService.DeleteOrder(id);
+                var response = await _orderService.DeleteOrder(id);
                 if (response != null)
                 {
                     return Ok(response);

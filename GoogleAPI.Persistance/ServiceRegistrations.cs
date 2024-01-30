@@ -6,9 +6,13 @@ using GoogleAPI.Persistance.Concreates.Services.CategoriesService;
 using GoogleAPI.Persistance.Concreates.Services.ColorsService;
 using GoogleAPI.Persistance.Concreates.Services.Configuration;
 using GoogleAPI.Persistance.Concreates.Services.DimensionsService;
+using GoogleAPI.Persistance.Concreates.Services.Helper;
+using GoogleAPI.Persistance.Concreates.Services.Mail;
+using GoogleAPI.Persistance.Concreates.Services.MarketPlace;
 using GoogleAPI.Persistance.Concreates.Services.Order;
 using GoogleAPI.Persistance.Concreates.Services.PersonalsService;
 using GoogleAPI.Persistance.Concreates.Services.Role;
+using GoogleAPI.Persistance.Concreates.Services.Supplier;
 using GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication;
 using GoogleAPI.Persistance.Contexts;
 using GoogleAPI.Persistance.Repositories;
@@ -22,9 +26,13 @@ using GooleAPI.Application.Abstractions.IServices.IBrand;
 using GooleAPI.Application.Abstractions.IServices.ICategory;
 using GooleAPI.Application.Abstractions.IServices.IColor;
 using GooleAPI.Application.Abstractions.IServices.IDimention;
+using GooleAPI.Application.Abstractions.IServices.IHelper;
+using GooleAPI.Application.Abstractions.IServices.IMail;
+using GooleAPI.Application.Abstractions.IServices.IMarketPlace;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
 using GooleAPI.Application.Abstractions.IServices.IPersonal;
 using GooleAPI.Application.Abstractions.IServices.IProduct;
+using GooleAPI.Application.Abstractions.IServices.ISupplier;
 using GooleAPI.Application.Abstractions.IServices.IUser;
 using GooleAPI.Application.Abstractions.IServices.Role;
 using GooleAPI.Application.IRepositories;
@@ -96,10 +104,17 @@ namespace GooleAPI.Infrastructure
             services.AddScoped<IMenuReadRepository, MenuReadRepository>();
             services.AddScoped<IMenuWriteRepository, MenuWriteRepository>();
 
+            services.AddScoped<ISupplierReadRepository, SupplierReadRepository>();
+            services.AddScoped<ISupplierWriteRepository, SupplierWriteRepository>();
+
+            services.AddScoped<IMarketPlaceReadRepository, MarketPlaceReadRepository>();
+            services.AddScoped<IMarketPlaceWriteRepository, MarketPlaceWriteRepository>();
+
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
 
             services.AddScoped<IRoleService, RoleService>();
+
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IProductService, ProductService>();
@@ -110,6 +125,11 @@ namespace GooleAPI.Infrastructure
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITranslateService, TranslateService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IMarketPlaceService, MarketPlaceService>();
+            services.AddScoped<ISupplierService, SupplierService>();
+            services.AddScoped<IHelperService,HelperService>();
+
         }
         //extention fonksiyonları
     }

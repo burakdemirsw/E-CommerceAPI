@@ -1,3 +1,4 @@
+using Google.Api;
 using GoogleAPI.API.Extentions;
 using GoogleAPI.API.Filters;
 using GooleAPI.Infrastructure;
@@ -17,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Servisler ekleniyor.
 
 builder.Services.AddPersistanceServices();
-
+builder.Services.AddHttpContextAccessor();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(

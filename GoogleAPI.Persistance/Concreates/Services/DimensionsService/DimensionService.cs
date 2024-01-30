@@ -8,15 +8,11 @@ namespace GoogleAPI.Persistance.Concreates.Services.DimensionsService
 {
     public class DimensionService : IDimensionService
     {
-        private readonly GooleAPIDbContext _context;
         private readonly IDimensionWriteRepository _cw;
         private readonly IDimensionReadRepository _cr;
-
-        private readonly string ErrorTextBase = "İstek Sırasında Hata Oluştu: ";
-
-        public DimensionService(GooleAPIDbContext context, IDimensionWriteRepository cw, IDimensionReadRepository cr)
+        public DimensionService( IDimensionWriteRepository cw, IDimensionReadRepository cr)
         {
-            _context = context;
+            
             _cw = cw;
             _cr = cr;
         }
@@ -25,7 +21,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.DimensionsService
         {
             try
             {
-                List<Dimension> dimensions = new List<Dimension>();
+                List<Domain.Entities.Dimension> dimensions = new List<Domain.Entities.Dimension>();
 
                 if (id == 0)
                 {
@@ -33,7 +29,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.DimensionsService
                 }
                 else
                 {
-                    Dimension dimension = await _cr.GetByIdAsync(id, true);
+                    Domain.Entities.Dimension dimension = await _cr.GetByIdAsync(id, true);
                     if (dimension != null)
                     {
                         dimensions.Add(dimension);
@@ -58,7 +54,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.DimensionsService
         {
             try
             {
-                Dimension dimension = new Dimension
+                Domain.Entities.Dimension dimension = new Domain.Entities.Dimension
                 {
                     Description = model.Description
                 };
@@ -76,7 +72,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.DimensionsService
         {
             try
             {
-                Dimension dimension = await _cr.GetByIdAsync(id, false);
+                Domain.Entities.Dimension dimension = await _cr.GetByIdAsync(id, false);
                 if (dimension == null)
                 {
                     return false;
