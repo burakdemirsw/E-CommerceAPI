@@ -2,11 +2,13 @@
 
 using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Models.Category.ViewModel;
+using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
 using GoogleAPI.Domain.Models.Product.Filters;
 using GoogleAPI.Domain.Models.Product.ViewModel;
 using GoogleAPI.Domain.Models.Response;
+using GoogleAPI.Domain.Models.Supplier.ViewModel;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.IProduct;
 using GooleAPI.Application.IRepositories;
@@ -154,7 +156,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
                 Console.WriteLine(ex.Message);
                 throw new Exception($"GetProductDetail method failed: {ex.Message}", ex);
                 return null;
-              
+
             }
         }
 
@@ -267,9 +269,9 @@ namespace GooleAPI.Persistance.Services.ProductsService
                 int totalCount = await query.CountAsync();
 
                 int skipCount = (model.Pagination.Page - 1) * model.Pagination.Size; // Calculate the number of items to skip
-                List<ProductCard_VM> list = await query.Skip(model.Pagination.Size*(model.Pagination.Page-1)).Take(model.Pagination.Size).ToListAsync();
+                List<ProductCard_VM> list = await query.Skip(model.Pagination.Size * (model.Pagination.Page - 1)).Take(model.Pagination.Size).ToListAsync();
 
-            
+
                 ResponseModel<ProductCard_VM> response = new ResponseModel<ProductCard_VM>();
                 response.TotalCount = totalCount;
                 response.Datas = list;
@@ -537,6 +539,7 @@ namespace GooleAPI.Persistance.Services.ProductsService
                   join c in _c.Colors on pr.ColorId equals c.Id
                   join d in _c.Dimensions on pr.DimensionId equals d.Id
                   join br in _c.Brands on pr.BrandId equals br.Id
+                  join sp in _c.Suppliers on pr.SupplierId equals sp.Id
                   where pr.StockCode == model.StockCode && pr.ColorId == model.ColorId
                   select new ProductVariation_VM
                   {
@@ -568,6 +571,12 @@ namespace GooleAPI.Persistance.Services.ProductsService
                           Description = br.Description,
                           Id = br.Id,
                           PhotoUrl = br.PhotoUrl
+                      },
+                      Supplier = new Supplier_VM
+                      {
+                          Description = sp.Description,
+                          Id = sp.Id,
+
                       },
                       Categories = (query).ToList(),
                       CoverLetter = pr.CoverLetter,
@@ -956,6 +965,55 @@ namespace GooleAPI.Persistance.Services.ProductsService
 
         }
 
+        public async Task<List<GetBasketProductsFilter_ResponseModel>> GetBasketProductsByFilter(GetBasketProductsFilter_CommandModel model)
+        {
+            IQueryable<Product> query = _c.Products.AsQueryable();
+
+            if (model.Id != 0)
+            {
+                query = query.Where(p => p.Id == model.Id);
+            }
+
+            if (!string.IsNullOrEmpty(model.CartId))
+            {
+                query = query.Where(p => p.StockCode + "-" + p.ColorId == model.CartId);
+            }
+
+            if (!string.IsNullOrEmpty(model.Barcode))
+            {
+                query = query.Where(p => p.Barcode == model.Barcode);
+            }
+
+            if (!string.IsNullOrEmpty(model.StockCode))
+            {
+                query = query.Where(p => p.StockCode == model.StockCode);
+            }
+
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                query = query.Where(p => p.Description == model.Description);
+            }
+
+            // Burada query değişkeni, filtrelenmiş sorgu sonucunu içerecektir.
+            // Şimdi sorgunuzu devam ettirebilir ve sonucu alabilirsiniz.
+
+            List<GetBasketProductsFilter_ResponseModel> result = query.ToList().Select(p => new GetBasketProductsFilter_ResponseModel
+            {
+                Id = p.Id,
+                PhotoUrl = _c.Photos.FirstOrDefault(ph => ph.Id == _c.ProductPhotos.FirstOrDefault(pp => pp.ProductId == p.Id && pp.IsFirstPhoto == true).PhotoId)?.Url,
+                CardId = p.StockCode + "-" + p.ColorId.ToString(),
+                StockCode = p.StockCode,
+                Description = p.Description,
+                StockAmount = p.StockAmount,
+                Barcode = p.Barcode,
+                NormalPrice = p.NormalPrice,
+                DiscountedPrice = p.DiscountedPrice,
+                ColorDescription = _c.Colors.FirstOrDefault(c => c.Id == p.ColorId)?.Description,
+                DimensionDescription = _c.Dimensions.FirstOrDefault(c => c.Id == p.DimensionId)?.Description
+            }).ToList();
+
+            return result;
+        }
 
     }
 }

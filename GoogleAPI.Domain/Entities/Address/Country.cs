@@ -1,11 +1,5 @@
 ﻿using GoogleAPI.Domain.Entities.Common;
 using GoogleAPI.Domain.Entities.User;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Domain.Entities.Address
 {

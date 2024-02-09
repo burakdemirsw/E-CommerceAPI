@@ -1,5 +1,6 @@
 ﻿
 using GoogleAPI.Domain.Entities.User;
+using GoogleAPI.Domain.Models.Address;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.Filters;
@@ -38,12 +39,13 @@ namespace GooleAPI.Application.Abstractions.IServices.IUser
         Task<bool> HasRolePermissionToEndpointAsync(int id, string code);
         #endregion
         #region USER&ADDRES
-        Task<bool> AddShippingAddressToUser(AddUserShippingAddressCommandModel model);
+        Task<AddUserShippingAddress_ResponseModel> AddShippingAddressToUser(AddUserShippingAddressCommandModel model);
         Task<bool> UpdateShippingAddressToUser(AddUserShippingAddressCommandModel model);
       
         Task<bool> DeleteUserShippingAddress(int shippingAddressId);
         Task<List<UserShippingAddress_VM>> GetUserShippingAddresses(int userId);
-     
+        Task<List<UserShippingAddress_VM>> GetUserShippingAddresSingle(int userId);
+
         #endregion
         #region PASSWORD
         Task SendPasswordResetEmail(string email);

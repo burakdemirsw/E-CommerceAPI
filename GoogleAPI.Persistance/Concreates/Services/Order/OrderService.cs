@@ -1,5 +1,6 @@
 ﻿
 using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Entities.PaymentEntities;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models;
 using GoogleAPI.Domain.Models.Category.CommandModel;
@@ -7,14 +8,20 @@ using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Order.ViewModel;
+using GoogleAPI.Domain.Models.Payment.Filter;
+using GoogleAPI.Domain.Models.Payment.ViewModel;
 using GoogleAPI.Domain.Models.Response;
 using GoogleAPI.Domain.Models.User.ViewModel;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
-using GooleAPI.Application.Abstractions.IServices.IUser;
 using GooleAPI.Application.IRepositories;
+using Iyzipay.Model;
+using Iyzipay.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using BasketItem = GoogleAPI.Domain.Entities.BasketItem;
+using Payment = GoogleAPI.Domain.Entities.PaymentEntities.Payment;
 
 
 namespace GoogleAPI.Persistance.Concreates.Services.Order
@@ -31,14 +38,19 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         IBasketReadRepository _br;
         IBasketItemReadRepository _bir;
+
+        private readonly IPaymentReadRepository _paymetReadRepository;
+        private readonly IPaymentWriteRepository _paymetWriteRepository;
+
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
 
         public OrderService(IBasketWriteRepository bw,
         IBasketItemWriteRepository biw,
         IBasketReadRepository br,
         IBasketItemReadRepository bir,
         IOrderWriteRepository ow,
-        IOrderReadRepository or, IProductReadRepository pr, GooleAPIDbContext context, IHttpContextAccessor httpContextAccessor)
+        IOrderReadRepository or, IProductReadRepository pr, GooleAPIDbContext context, IHttpContextAccessor httpContextAccessor,IConfiguration configuration, IPaymentReadRepository paymentReadRepository, IPaymentWriteRepository paymentWriteRepository)
         {
             _bir = bir;
             _biw = biw;
@@ -48,9 +60,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             _ow = ow;
             _pr = pr;
             _context = context;
-            _httpContextAccessor = httpContextAccessor; 
-        
-
+            _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
+            _paymetReadRepository = paymentReadRepository;
+            _paymetWriteRepository = paymentWriteRepository;
         }
 
 
@@ -99,7 +112,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         public async Task<int> GetBasket(int userId)
         {
-           
+
 
             try
             {
@@ -175,27 +188,27 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
         {
             List<OrderList_VM> orderList = new List<OrderList_VM>();
             IQueryable<Domain.Entities.Order> query = _or.Table.AsQueryable();
-           
+
 
 
             if (model.OrderNo != Guid.Empty)
             {
-                query = query.Where(o => (o.OrderNo == model.OrderNo) );
+                query = query.Where(o => (o.OrderNo == model.OrderNo));
             }
             if (model.Id != 0)
             {
                 query = query.Where(o => o.Id == model.Id);
             }
-            if (model.BaketId != 0)
+            if (model.BasketId != 0)
             {
-                query = query.Where(o=> o.BasketId == model.BaketId);
+                query = query.Where(o => o.BasketId == model.BasketId);
             }
             //if (model.UserId!=0)
             //{
             //    query.Include(p => p.Basket).Where(p => p.Basket.UserId == model.UserId);
             //}
             List<Domain.Entities.Order> orders = await query
-               
+
                 .Skip((model.Pagination.Page - 1) * model.Pagination.Size)
                 .Take(model.Pagination.Size)
                  .OrderByDescending(o => o.Id)
@@ -232,7 +245,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             }
             int totalCount = await query.CountAsync();
 
-            ResponseModel<OrderList_VM> response  = new ResponseModel<OrderList_VM> { Datas = orderList, TotalCount = totalCount };
+            ResponseModel<OrderList_VM> response = new ResponseModel<OrderList_VM> { Datas = orderList, TotalCount = totalCount };
             return response;
         }
 
@@ -269,7 +282,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                             StockCode = grouped.Key.StockCode
                         };
 
-         
+
             // Execute the query and populate the BasketItemList_VM list
             var basketItemList_VM = await query.ToListAsync(); // Assuming you are using Entity Framework or a similar ORM
 
@@ -285,6 +298,21 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 // For now, let's return an empty list
                 return new List<BasketItemList_VM>();
             }
+        }
+
+        public async Task<bool> ClearBasketItems(int basketId)
+        {
+            List<BasketItem>? basketItems = _context.BasketItems.Where(p => p.BasketId == basketId).ToList();
+
+            if (basketItems != null && basketItems.Count > 0)
+            {
+                foreach (var item in basketItems)
+                {
+                    _biw.Remove(item);
+                }
+            }
+
+            return true;
         }
         //onaylanan siparişin basketId değerini günceller
         public async Task<bool> UpdateOrderBasket(Guid basketNo)
@@ -319,46 +347,67 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         }
         //sepetteki ürün adedini günceller
-        public async Task<UpdateBasketItemCommandResponse> AddItemToBasket(AddBasketItem_VM model)
+        public async Task<UpdateBasketItemCommandResponse> AddItemToBasket(List<AddBasketItem_VM> models)
         {
+
             UpdateBasketItemCommandResponse updateBasketItemCommandResponse = new UpdateBasketItemCommandResponse();
-            Basket? basket = _context.Baskets.FirstOrDefault(b => b.Id == model.BasketId);
-            if (basket == null)
+
+
+            foreach (var model in models)
             {
-                CreateBasketResponseModel createBasketResponseModel = await AddBasket(model.UserId);
-                model.BasketId = createBasketResponseModel.BasketId;
+                Basket? basket = _context.Baskets.FirstOrDefault(b => b.Id == model.BasketId);
+                if (basket == null)
+                {
+                    CreateBasketResponseModel createBasketResponseModel = await AddBasket(model.UserId);
+                    model.BasketId = createBasketResponseModel.BasketId;
+
+                }
+                Product? product = _context.Products.FirstOrDefault(p => p.StockCode == model.StockCode && p.DimensionId == model.DimensionId && p.ColorId == model.ColorId);
+                Product? _product = new Product();
+                if (product == null)
+                {
+                    _product = _context.Products.FirstOrDefault(p => p.Id == model.ProductId);
+                    if (_product == null)
+                    {
+                        throw new Exception("Ürün Bulunamadı");
+                    }
+                }
+
+                BasketItem? checkBasketItem = new BasketItem();
+                ;
+                if (product != null)
+                {
+
+                    checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == product.Id);
+                }
+                else
+                {
+                    checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == _product.Id);
+                }
+
+                if (checkBasketItem == null)
+                {
+                    BasketItem basketItem = new BasketItem();
+                    basketItem.ProductId = product == null ? _product.Id : product.Id;
+                    basketItem.Quantity = model.Quantity;
+                    basketItem.BasketId = model.BasketId;
+                    basketItem.CreatedDate = DateTime.Now;
+                    var response1 = await _biw.AddAsync(basketItem);
+                    updateBasketItemCommandResponse.State = true;
+                    updateBasketItemCommandResponse.BasketId = basketItem.BasketId;
+                    //  return updateBasketItemCommandResponse;
+                }
+                else
+                {
+                    checkBasketItem.Quantity += model.Quantity;
+                    var response2 = await _biw.Update(checkBasketItem);
+                    updateBasketItemCommandResponse.State = true;
+                    updateBasketItemCommandResponse.BasketId = model.BasketId;
+                    // return updateBasketItemCommandResponse;
+                }
 
             }
-            Product? product = _context.Products.FirstOrDefault(p=>p.StockCode == model.StockCode && p.DimensionId == model.DimentionId && p.ColorId == model.ColorId);  
-            if(product == null)
-            {
-                throw new Exception("Ürün Bulunamadı");
-            }
-            BasketItem? checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == product.Id);
-
-            if (checkBasketItem == null)
-            {
-                BasketItem basketItem = new BasketItem();
-                basketItem.ProductId = product.Id;
-                basketItem.Quantity = model.Quantity;
-                basketItem.BasketId = model.BasketId;
-                basketItem.CreatedDate = DateTime.Now;
-                var response1 = await _biw.AddAsync(basketItem);
-                updateBasketItemCommandResponse.State = true;
-                updateBasketItemCommandResponse.BasketId = basketItem.BasketId;
-                return updateBasketItemCommandResponse;
-            }
-            else
-            {
-                checkBasketItem.Quantity += model.Quantity;
-                var response2 = await _biw.Update(checkBasketItem);
-                updateBasketItemCommandResponse.State = true;
-                updateBasketItemCommandResponse.BasketId = model.BasketId;
-                return updateBasketItemCommandResponse;
-            }
-
-
-
+            return updateBasketItemCommandResponse;
 
         }
         //sepeti onayla dedikten sorna kişinin güncel sepetID;
@@ -524,8 +573,6 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
         }
         public async Task<GetOrderDetail_ResponseModel> GetOrderDetail(int basketId)
         {
-
-
             try
             {
                 Domain.Entities.Basket? basket = await _context.Baskets.FirstOrDefaultAsync(o => o.Id == basketId);
@@ -533,20 +580,31 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 {
                     GetOrderDetail_ResponseModel response = new GetOrderDetail_ResponseModel();
                     response.Address = await GetUserOrderShippingAddres(basket.Id);
-                    //response.Items = await GetBasketItems(basket.Id);
                     response.User = await GetOrderUser(basket.UserId);
                     GetOrderListFilterCommandModel filter = new GetOrderListFilterCommandModel();
                     filter.Pagination = new Pagination();
                     filter.Pagination.Size = 1;
                     filter.Pagination.Page = 1;
-                    filter.BaketId = basketId;
+                    filter.BasketId = basketId;
+
+                    int? orderId = _context.Orders.FirstOrDefault(o => o.BasketId == basketId)?.Id;
+                    if(orderId == null)
+                    {
+                        response.Payments = null;
+                    }
+                    if (orderId != null)
+                    
+                    {
+                        response.Payments =await  GetPaymentsOfOrderList(new PaymentFilter { OrderId = orderId , Status = true });
+                    }
+                   
 
                     ResponseModel<OrderList_VM> _response = await GetOrders(filter);
 
                     if (_response.Datas != null)
-                    { 
+                    {
                     }
-                    if ( _response.Datas.Count >0)
+                    if (_response.Datas.Count > 0)
                     {
 
                         response.OrderDetail = _response.Datas.First();
@@ -568,8 +626,173 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
                 throw new Exception(ex.Message + ex.StackTrace);
             }
-           
-            
+
+
         }
+
+        public async Task<GetOrderDetail_ResponseModel> CheckIyzcoPaymentStatus(string conversationId)
+        {
+
+            //ÖDEME ONAYI NASIL VERİLİR? 
+            
+
+            //CLİENT TARAFINDAN BİR CID YOLLANANIR
+
+            Payment? payment = _context.Payments.FirstOrDefault(payment => payment.ConversationId == conversationId);
+            if ((payment) != null)
+            {
+            
+
+                Iyzipay.Options options = new Iyzipay.Options
+                {
+                    ApiKey = _configuration["Payment:Iyzco:ApiKey"],
+                    SecretKey = _configuration["Payment:Iyzco:ApiSecretKey"],
+                    BaseUrl = "https://sandbox-api.iyzipay.com"
+                };
+
+                RetrieveCheckoutFormRequest request = new RetrieveCheckoutFormRequest();
+                request.Locale = "tr";
+                request.ConversationId = conversationId;
+                request.Token = payment.PaymentToken;
+
+                CheckoutForm checkoutForm = CheckoutForm.Retrieve(request, options);
+
+                //CLİENT TARAFINDAN YOLLANAN ID DB YE KAYDEDİLEN VERİLERLE UYUŞUYORSA VE BAŞARILI İSE GERİYE SİPARİŞ DETAYI DÖNDÜRÜLÜR
+                if (checkoutForm.ConversationId == payment.ConversationId && checkoutForm.Token == payment.PaymentToken && Convert.ToDecimal(checkoutForm.PaidPrice) == payment.PaymentValue)
+                {
+                    int basketId = _context.Orders.FirstOrDefault(o => o.Id == payment.OrderId).BasketId;
+                    if (basketId != null)
+                    {
+                        if(payment.Status != true)
+                        {
+                            payment.Status = true;
+                            await _paymetWriteRepository.Update(payment);
+
+
+                        }
+
+                        //update işlemleri 
+                      
+                        GetOrderDetail_ResponseModel model = await GetOrderDetail(basketId);
+
+                        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(model));
+                        return model;
+                    }
+                    else
+                    {
+                        throw new Exception("basketId null");
+                    }
+
+                }
+                else
+                {
+                    throw new Exception("Ödeme Verileri DB'ile Eşleşmedi");
+                }
+
+
+            }
+            else
+            {
+                throw new Exception("Ödeme Bulunamadı");
+            }
+
+
+        }
+
+        public async Task<GetOrderDetail_ResponseModel> CheckPaytrPaymentStatus(string conversationId,bool status)
+        {
+
+            Payment? payment = _context.Payments.FirstOrDefault(payment => payment.ConversationId == conversationId);
+            if ((payment) != null)
+            {
+                Iyzipay.Options options = new Iyzipay.Options
+                {
+                    ApiKey = _configuration["Payment:Iyzco:ApiKey"],
+                    SecretKey = _configuration["Payment:Iyzco:ApiSecretKey"],
+                    BaseUrl = "https://sandbox-api.iyzipay.com"
+                };
+
+                RetrieveCheckoutFormRequest request = new RetrieveCheckoutFormRequest();
+                request.Locale = "tr";
+                request.ConversationId = conversationId;
+                request.Token = payment.PaymentToken;
+
+                CheckoutForm checkoutForm = CheckoutForm.Retrieve(request, options);
+
+                //CLİENT TARAFINDAN YOLLANAN ID DB YE KAYDEDİLEN VERİLERLE UYUŞUYORSA VE BAŞARILI İSE GERİYE SİPARİŞ DETAYI DÖNDÜRÜLÜR
+                if (checkoutForm.ConversationId == payment.ConversationId && checkoutForm.Token == payment.PaymentToken && Convert.ToDecimal(checkoutForm.PaidPrice) == payment.PaymentValue)
+                {
+                    int basketId = _context.Orders.FirstOrDefault(o => o.Id == payment.OrderId).BasketId;
+                    if (basketId != null)
+                    {
+                        if (payment.Status != true)
+                        {
+                            payment.Status = true;
+                            await _paymetWriteRepository.Update(payment);
+
+
+                        }
+
+                        //update işlemleri 
+
+                        GetOrderDetail_ResponseModel model = await GetOrderDetail(basketId);
+
+                        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(model));
+                        return model;
+                    }
+                    else
+                    {
+                        throw new Exception("basketId null");
+                    }
+
+                }
+                else
+                {
+                    throw new Exception("Ödeme Verileri DB'ile Eşleşmedi");
+                }
+
+
+            }
+            else
+            {
+                throw new Exception("Ödeme Bulunamadı");
+            }
+
+
+        }
+
+        public async Task<List<PaymentList_VM>> GetPaymentsOfOrderList(PaymentFilter request)
+        {
+
+            var query = from p in _context.Payments
+                        join o in _context.Orders on p.OrderId equals o.Id
+                        join b in _context.Baskets on o.BasketId equals b.Id
+                        join pm in _context.PaymentMethods on p.PaymentMethodId equals pm.Id
+                        where (request.PaymentId == 0 ?   p.Id > 0 : p.Id == request.PaymentId) &&
+                              (request.BasketId == 0 ? b.Id > 0 : b.Id == request.BasketId) &&
+                              (request.OrderId == 0 ? o.Id > 0 : o.Id == request.OrderId) &&
+                              (request.PaymentMethodId == 0 ? p.PaymentMethodId > 0 : p.PaymentMethodId == request.PaymentMethodId) &&
+                              p.Status == request.Status
+                        select new PaymentList_VM
+                        {
+                            Id = p.Id,
+                            OrderNo = o.OrderNo,
+                            OrderCreatedDate = o.CreatedDate,
+                            BasketId = b.Id,
+                            BasketCreatedDate = b.CreatedDate,
+                            PaymentToken = p.PaymentToken,
+                            PaymentMethodDescription = pm.Description,
+                            Status = p.Status,
+                            ExceptionCode = p.ExceptionCode,
+                            ExceptionDescription = p.ExceptionDescription
+                        };
+
+            List<PaymentList_VM> response = await query.ToListAsync();
+
+            return response;
+
+        }
+
+
     }
 }

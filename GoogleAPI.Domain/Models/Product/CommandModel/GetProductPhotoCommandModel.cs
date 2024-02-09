@@ -2,8 +2,8 @@
 {
     public class GetProductPhotoCommandModel : ProductCard_DTO
     {
-        
-       
+
+
     }
 
 

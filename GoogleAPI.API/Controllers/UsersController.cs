@@ -1,3 +1,4 @@
+using GoogleAPI.Domain.Models.Address;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.Filters;
@@ -18,9 +19,9 @@ namespace GoogleAPI.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-         readonly IUserService _userService;
-         readonly IRoleService _roleService;
-         readonly IAuthorizationEndpointService _authorizationEndpointService;
+        readonly IUserService _userService;
+        readonly IRoleService _roleService;
+        readonly IAuthorizationEndpointService _authorizationEndpointService;
 
         public UsersController(IUserService userService, IRoleService roleService, IAuthorizationEndpointService authorizationEndpointService)
         {
@@ -48,7 +49,7 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("update")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User")]   
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Updating, Definition = "Update User")]
         public async Task<ActionResult<bool>> Update(UserRegister_VM model)
         {
             bool response = await _userService.Update(model);
@@ -64,8 +65,8 @@ namespace GoogleAPI.API.Controllers
         }
 
 
-       
-       
+
+
 
         [HttpPost("login")]
         //[Authorize(AuthenticationSchemes = "Admin")]
@@ -273,11 +274,11 @@ namespace GoogleAPI.API.Controllers
         #region USER&ADDRESS
         [HttpPost("add-shipping-address-to-user")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Add Shipping Address To User")]
-        public async Task<ActionResult<bool>> AddShippingAddressToUser(AddUserShippingAddressCommandModel model)
+        public async Task<ActionResult<AddUserShippingAddress_ResponseModel>> AddShippingAddressToUser(AddUserShippingAddressCommandModel model)
         {
-            bool response = await _userService.AddShippingAddressToUser(model);
+            AddUserShippingAddress_ResponseModel response = await _userService.AddShippingAddressToUser(model);
 
-            if (response)
+            if (response.State)
             {
                 return Ok(response);
             }
@@ -331,7 +332,23 @@ namespace GoogleAPI.API.Controllers
             }
             else
             {
-                return BadRequest("Adres çekilirken bir hata oluştu.");
+                return Ok(null);
+            }
+        }
+
+        [HttpGet("get-user-shipping-addres-single/{id}")]
+        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Get User Shipping Address Single")]
+        public async Task<ActionResult<List<UserShippingAddress_VM>>> GetUserShippingAddresSingle(int id)
+        {
+            List<UserShippingAddress_VM> response = await _userService.GetUserShippingAddresSingle(id);
+
+            if (response.Count > 0)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return Ok(null);
             }
         }
 
@@ -345,7 +362,7 @@ namespace GoogleAPI.API.Controllers
 
         [HttpGet("confirm-password-token/{token}")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Writing, Definition = "Confirm Password Token")]
-        public async Task<ActionResult> ConfirmPasswordToken( string token)
+        public async Task<ActionResult> ConfirmPasswordToken(string token)
         {
             var response = await _userService.ConfirmPasswordToken(token);
             return Ok(response);

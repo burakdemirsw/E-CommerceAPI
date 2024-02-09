@@ -1,4 +1,3 @@
-using Google.Api;
 using GoogleAPI.API.Extentions;
 using GoogleAPI.API.Filters;
 using GooleAPI.Infrastructure;
@@ -93,7 +92,7 @@ builder.Services.AddCors(options =>
         // Ýzin verilen kökenleri (origins) burada belirtiyoruz.
         policy
             .WithOrigins(
-                 "http://localhost:7180",          
+                 "http://localhost:7180",
                 "http://localhost:4200",
                 "http://localhost:4203",
                  "http://localhost:4202",
@@ -104,7 +103,7 @@ builder.Services.AddCors(options =>
                 "http://212.156.46.206:4200",
                  "http://212.156.46.206:4202",
                 "http://212.156.46.206:7180",
-                "http://212.156.46.206:4203","*") // Yýldýz (*) kullanarak herhangi bir kaynaða izin verebilirsiniz.
+                "http://212.156.46.206:4203", "*") // Yýldýz (*) kullanarak herhangi bir kaynaða izin verebilirsiniz.
              .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });

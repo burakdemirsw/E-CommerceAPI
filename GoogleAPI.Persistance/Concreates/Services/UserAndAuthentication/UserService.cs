@@ -1,5 +1,5 @@
-﻿using GoogleAPI.Domain.Entities;
-using GoogleAPI.Domain.Entities.User;
+﻿using GoogleAPI.Domain.Entities.User;
+using GoogleAPI.Domain.Models.Address;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.Filters;
@@ -18,9 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Text;
-using ZXing.Aztec.Internal;
 using Token = GoogleAPI.Domain.Models.User.Token;
 
 namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
@@ -48,7 +46,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             IAddressWriteRepository addressWriteRepository,
             IAddressReadRepository addressReadRepository, IEndpointReadRepository err,
             IMailService mailService,
-            IHelperService  helperService,
+            IHelperService helperService,
             IConfiguration configuration
 
         )
@@ -89,7 +87,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             {
                 var password = _helperService.ComputeHMACSHA256(model.Password, _configuration["Password:SecurityKey"]);
 
-              
+
                 user = _context.Users.FirstOrDefault(u => u.PhoneNumber == model.PhoneNumberOrEmail && u.Password == password);
 
                 user2 = _context.Users.FirstOrDefault(u => u.Email == model.PhoneNumberOrEmail && u.Password == password);
@@ -141,8 +139,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                                     userClientInfoResponse.UserId = user2.Id;
                                     userClientInfoResponse.Mail = user2.Email;
                                     userClientInfoResponse.PhoneNumber = user2.PhoneNumber;
-                                    userClientInfoResponse.Name =  user2.FirstName;
-                                    userClientInfoResponse.Surname =  user2.LastName;
+                                    userClientInfoResponse.Name = user2.FirstName;
+                                    userClientInfoResponse.Surname = user2.LastName;
 
                                     userClientInfoResponse.BasketId = await _orderService.GetBasket(user2.Id);
                                     return userClientInfoResponse;
@@ -172,7 +170,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             }
         }
 
-     
+
 
         public async Task<bool> Register(UserRegister_VM model)
         {
@@ -195,7 +193,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 
                     user.FirstName = model.FirstName;
                     user.LastName = model.LastName;
-                    user.Password =_helperService.ComputeHMACSHA256(model.Password, _configuration["Password:SecurityKey"]);
+                    user.Password = _helperService.ComputeHMACSHA256(model.Password, _configuration["Password:SecurityKey"]);
                     user.PhoneNumber = model.PhoneNumber;
                     user.Email = model.Email;
                     user.SubscribeToPromotions = model.SubscribeToPromotions;
@@ -248,7 +246,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 User? checkUserById = _context.Users?.FirstOrDefault(u => u.Id == model.Id);
                 User? checkUserByMail = _context.Users?.FirstOrDefault(u => u.Email == model.Email);
                 User? checkUserByPhoneNumber = _context.Users?.FirstOrDefault(u => u.PhoneNumber == model.PhoneNumber);
-                if ((checkUserByMail == null && checkUserByPhoneNumber ==null) || (checkUserById.Email == model.Email && checkUserById.PhoneNumber == model.PhoneNumber))
+                if ((checkUserByMail == null && checkUserByPhoneNumber == null) || (checkUserById.Email == model.Email && checkUserById.PhoneNumber == model.PhoneNumber))
                 {
                     if (checkUserById != null)
                     {
@@ -347,7 +345,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                     );
                 response.State = true;
                 response.Token = token;
-         
+
                 _response.RefreshTokenCommandResponse = response;
                 _response.UserId = user.Id;
                 _response.Mail = user.Email;
@@ -392,6 +390,16 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             if (!string.IsNullOrEmpty(model.LastName))
             {
                 q = q.Where(u => u.LastName.Contains(model.LastName));
+
+            }
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+            {
+                q = q.Where(u => u.PhoneNumber.Contains(model.PhoneNumber));
+            }
+            if (!string.IsNullOrEmpty(model.Email))
+            {
+                q = q.Where(u => u.Email.Contains(model.Email));
 
             }
             if (model.Id != 0)
@@ -508,9 +516,9 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
         }
 
         #region USER&ADDRESS
-        public async Task<bool> AddShippingAddressToUser(AddUserShippingAddressCommandModel model)
+        public async Task<AddUserShippingAddress_ResponseModel> AddShippingAddressToUser(AddUserShippingAddressCommandModel model)
         {
-            try  
+            try
             {
                 ShippingAddress address = new();
 
@@ -524,7 +532,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 address.AddressDescription = model.AddressDescription;
                 address.RowGuid = Guid.NewGuid();
                 address.IsCorporate = model.IsCorporate;
-                address.IsIndividual = model.IsIndividual; 
+                address.IsIndividual = model.IsIndividual;
                 address.CorparateDescription = model.CorparateDescription;
                 address.TaxAuthorityDescription = model.TaxAuthorityDescription;
                 address.TaxNo = model.TaxNo;
@@ -535,12 +543,23 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 bool response = await _aw.AddAsync(address);
                 if (response)
                 {
-                    return true;
+                    ShippingAddress? _address = await _context.ShippingAddresses.FirstOrDefaultAsync(a => a.RowGuid == address.RowGuid);
+                    AddUserShippingAddress_ResponseModel _response = new AddUserShippingAddress_ResponseModel();
+                    _response.Id = _address.Id;
+                    _response.State = true;
+
+                    return _response;
+
 
                 }
                 else
                 {
-                    return false;
+                    AddUserShippingAddress_ResponseModel _response = new AddUserShippingAddress_ResponseModel();
+                    _response.Id = 0;
+                    _response.State = false;
+                    ;
+
+                    return _response;
                 }
 
             }
@@ -550,15 +569,15 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             }
         }
 
-      
+
         public async Task<bool> UpdateShippingAddressToUser(AddUserShippingAddressCommandModel model)
         {
             try
             {
-                ShippingAddress? _address  = await _context.ShippingAddresses.FirstOrDefaultAsync(sa=>sa.Id == model.Id);
-            if(_address != null)
-            {
-                   
+                ShippingAddress? _address = await _context.ShippingAddresses.FirstOrDefaultAsync(sa => sa.Id == model.Id);
+                if (_address != null)
+                {
+
                     _address.AddressTitle = model.AddressTitle;
                     _address.CountryId = model.CountryId;
                     _address.ProvinceId = model.ProvinceId;
@@ -576,7 +595,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                     _address.UpdatedDate = model.UpdatedDate;
 
                     _address.UserId = model.UserId;
-                    var response =  _context.ShippingAddresses.Update(_address);
+                    var response = _context.ShippingAddresses.Update(_address);
                     await _context.SaveChangesAsync();
 
                     return true;
@@ -585,8 +604,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 {
                     return false;
                 }
-          
-                
+
+
 
 
             }
@@ -597,10 +616,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             }
         }
 
-       
-    
 
-        public async  Task<bool> DeleteUserShippingAddress(int shippingAddressId)
+
+
+        public async Task<bool> DeleteUserShippingAddress(int shippingAddressId)
         {
             ShippingAddress? _address = await _context.ShippingAddresses.FirstOrDefaultAsync(sa => sa.Id == shippingAddressId);
             if (_address != null)
@@ -615,9 +634,9 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             }
         }
 
-      
 
-        public async  Task<List<UserShippingAddress_VM>> GetUserShippingAddresses(int userId)
+
+        public async Task<List<UserShippingAddress_VM>> GetUserShippingAddresses(int userId)
         {
             var models = (from a in _context.ShippingAddresses
                           where a.UserId == userId
@@ -630,7 +649,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                           {
                               Id = a.Id,
                               UserId = a.UserId,
-                              NameSurname = u.FirstName+" "+u.LastName,
+                              NameSurname = u.FirstName + " " + u.LastName,
                               AddressTitle = a.AddressTitle,
                               AddressDescription = a.AddressDescription,
                               CountryDescripton = c.Description,
@@ -650,35 +669,35 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             return models;
         }
 
-       
+
 
 
         public async Task SendPasswordResetEmail(string email)
         {
-            User? user =await  _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+            User? user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
 
-                if(user.LastCreateNewPasswordEmailDate==null || user.LastCreateNewPasswordEmailDate.Value.AddMinutes(10)<= DateTime.Now)
+                if (user.LastCreateNewPasswordEmailDate == null || user.LastCreateNewPasswordEmailDate.Value.AddMinutes(10) <= DateTime.Now)
                 {
 
-                
+
                     Token token = await _ts.CreatePasswordResetToken(300, user);
                     user.PasswordToken = token.AccessToken;
                     user.PasswordTokenEndDate = DateTime.Now.AddMinutes(300);
                     user.IsPasswordTokenUsed = false;
                     user.LastCreateNewPasswordEmailDate = DateTime.Now;
-                    await _uw.Update(user);   
+                    await _uw.Update(user);
                     byte[] tokenBytes = Encoding.UTF8.GetBytes(token.AccessToken);
                     token.AccessToken = WebEncoders.Base64UrlEncode(tokenBytes);
                     await _mailService.SendPasswordResetEmail(user.Email, user.Id.ToString(), token.AccessToken);
                 }
                 else
                 {
-                    TimeSpan fark =  DateTime.Now- user.LastCreateNewPasswordEmailDate.Value ; 
-                    if(fark.Minutes <= 10)
+                    TimeSpan fark = DateTime.Now - user.LastCreateNewPasswordEmailDate.Value;
+                    if (fark.Minutes <= 10)
                     {
-                      throw new Exception($"{10 - fark.Minutes} Dakika Sonra Yeniden Deneyiniz");
+                        throw new Exception($"{10 - fark.Minutes} Dakika Sonra Yeniden Deneyiniz");
 
                     }
                 }
@@ -691,7 +710,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             }
         }
 
-       
+
 
         public async Task<bool> ConfirmPasswordToken(string passwordToken)
         {
@@ -716,10 +735,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             //Console.WriteLine(DateTime.Now);
             if (expiry > DateTime.Now)
             {
-             
-                User? user =await _context.Users.FirstOrDefaultAsync(u => u.PasswordToken == resetToken);
 
-                if (user == null  )
+                User? user = await _context.Users.FirstOrDefaultAsync(u => u.PasswordToken == resetToken);
+
+                if (user == null)
                 {
                     throw new InvalidOperationException("User not found.");
                 }
@@ -728,18 +747,18 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                     if (user.IsPasswordTokenUsed == false)
                     {
                         return true;
-                        
+
                     }
                     else
                     {
                         throw new InvalidOperationException("Token used before.");
                     }
                 }
-              
+
 
 
             }
-      
+
 
             // Check if the token is expired
             return (expiry > DateTime.Now);
@@ -756,7 +775,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                 if (OldPassword == user.Password)
                 {
                     var newPassword = _helperService.ComputeHMACSHA256(model.NewPassword, _configuration["Password:SecurityKey"]);
-                    user.Password = newPassword;  
+                    user.Password = newPassword;
                     user.IsPasswordTokenUsed = true;
                     await _uw.Update(user);
                     return true;
@@ -771,10 +790,43 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
             {
                 throw new InvalidOperationException("Token Got Problem.");
             }
-           
+
         }
 
-       
+        public async Task<List<UserShippingAddress_VM>> GetUserShippingAddresSingle(int addressId)
+        {
+            var models = (from a in _context.ShippingAddresses
+                          where a.Id == addressId
+                          join c in _context.Countries on a.CountryId equals c.Id
+                          join p in _context.Provinces on a.ProvinceId equals p.Id
+                          join d in _context.Districts on a.DistrictId equals d.Id
+                          join u in _context.Users on a.UserId equals u.Id
+                          join n in _context.Neighborhoods on a.NeighborhoodId equals n.Id
+                          select new UserShippingAddress_VM
+                          {
+                              Id = a.Id,
+                              UserId = a.UserId,
+                              NameSurname = u.FirstName + " " + u.LastName,
+                              AddressTitle = a.AddressTitle,
+                              AddressDescription = a.AddressDescription,
+                              CountryDescripton = c.Description,
+                              ProvinceDescripton = p.Description,
+                              DistrictDescripton = d.Description,
+                              NeighborhoodDescripton = n.Description,
+                              IsIndividual = a.IsIndividual,
+                              IsCorporate = a.IsCorporate,
+                              CorparateDescription = a.CorparateDescription,
+                              TaxAuthorityDescription = a.TaxAuthorityDescription,
+                              TaxNo = a.TaxNo,
+                              PostalCode = a.PostalCode,
+                              UpdatedDate = a.UpdatedDate
+                          }).ToList();
+
+
+            return models;
+        }
+
+
 
         #endregion
     }

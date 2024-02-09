@@ -1,12 +1,8 @@
-
-using Google.Rpc;
-using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Entities.Address;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.Address;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Persistance.Contexts;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,10 +15,13 @@ namespace GoogleAPI.API.Controllers
     {
         private readonly GooleAPIDbContext _context;
 
+
         public AddressController(GooleAPIDbContext context)
         {
             _context = context;
         }
+
+
         [HttpGet("get-countries/{id}")]
         public async Task<ActionResult> GetCountries(int id)
         {
@@ -31,7 +30,7 @@ namespace GoogleAPI.API.Controllers
                 List<Country_VM> models = _context.Countries.ToList().Select(p => new Country_VM
                 {
                     Id = p.Id,
-                    
+
                     Description = p.Description,
                 }).ToList();
                 return Ok(models); //return Ok()(models);
@@ -41,7 +40,7 @@ namespace GoogleAPI.API.Controllers
                 List<Country_VM> models = _context.Countries.Where(p => p.Id == id).Select(p => new Country_VM
                 {
                     Id = p.Id,
-                    
+
                     Description = p.Description,
                 }).ToList();
                 return Ok(models); //return Ok()(models);
@@ -60,8 +59,8 @@ namespace GoogleAPI.API.Controllers
                 var newCountry = new Country
                 {
                     Description = country.Description,
-                    
-                   
+
+
                 };
 
                 _context.Countries.Add(newCountry);
@@ -84,7 +83,7 @@ namespace GoogleAPI.API.Controllers
             }
 
             existingCountry.Description = country.Description;
-       
+
             // Update other properties as needed
 
             _context.Countries.Update(existingCountry);
@@ -124,7 +123,7 @@ namespace GoogleAPI.API.Controllers
                 _context.Provinces.Add(newProvince);
                 await _context.SaveChangesAsync();
 
-               return Ok(true); //return Ok()("Province added successfully.");
+                return Ok(true); //return Ok()("Province added successfully.");
             }
 
             return BadRequest(false);
@@ -145,7 +144,7 @@ namespace GoogleAPI.API.Controllers
             _context.Provinces.Update(existingProvince);
             await _context.SaveChangesAsync();
 
-           return Ok(true); //return Ok()("Province updated successfully.");
+            return Ok(true); //return Ok()("Province updated successfully.");
         }
 
         [HttpDelete("delete-province/{id}")]
@@ -155,13 +154,14 @@ namespace GoogleAPI.API.Controllers
 
             if (existingProvince == null)
             {
-                return NotFound(false); return NotFound(false); //return NotFound("Province not found.");
+                return NotFound(false);
+                return NotFound(false); //return NotFound("Province not found.");
             }
 
             _context.Provinces.Remove(existingProvince);
             await _context.SaveChangesAsync();
 
-           return Ok(true); //return Ok()("Province deleted successfully.");
+            return Ok(true); //return Ok()("Province deleted successfully.");
         }
 
 
@@ -170,24 +170,25 @@ namespace GoogleAPI.API.Controllers
         {
             if (id == -1)
             {
-                List<Province_VM>  models = _context.Provinces.ToList().Select(p => new Province_VM { 
-                    Id = p.Id,
-                CountryId = p.CountryId,
-                Description = p.Description,
-                }).ToList();
-               return Ok(models); //return Ok()(models);
-            }
-            else
-            {
-                List<Province_VM> models = _context.Provinces.Where(p=>p.Id == id).Select(p => new Province_VM
+                List<Province_VM> models = _context.Provinces.ToList().Select(p => new Province_VM
                 {
                     Id = p.Id,
                     CountryId = p.CountryId,
                     Description = p.Description,
                 }).ToList();
-               return Ok(models); //return Ok()(models);
+                return Ok(models); //return Ok()(models);
             }
-          
+            else
+            {
+                List<Province_VM> models = _context.Provinces.Where(p => p.Id == id).Select(p => new Province_VM
+                {
+                    Id = p.Id,
+                    CountryId = p.CountryId,
+                    Description = p.Description,
+                }).ToList();
+                return Ok(models); //return Ok()(models);
+            }
+
 
         }
 
@@ -205,14 +206,14 @@ namespace GoogleAPI.API.Controllers
                 _context.Districts.Add(newDistrict);
                 await _context.SaveChangesAsync();
 
-               return Ok(true); //return Ok()("District added successfully.");
+                return Ok(true); //return Ok()("District added successfully.");
             }
 
             return BadRequest("Invalid data provided.");
         }
 
         [HttpPut("update-district")]
-        public async Task<ActionResult> UpdateDistrict( [FromBody] District_VM district)
+        public async Task<ActionResult> UpdateDistrict([FromBody] District_VM district)
         {
             var existingDistrict = await _context.Districts.FindAsync(district.Id);
 
@@ -227,7 +228,7 @@ namespace GoogleAPI.API.Controllers
             _context.Districts.Update(existingDistrict);
             await _context.SaveChangesAsync();
 
-           return Ok(true); //return Ok()("District updated successfully.");
+            return Ok(true); //return Ok()("District updated successfully.");
         }
 
 
@@ -244,7 +245,7 @@ namespace GoogleAPI.API.Controllers
             _context.Districts.Remove(existingDistrict);
             await _context.SaveChangesAsync();
 
-           return Ok(true); //return Ok()("District deleted successfully.");
+            return Ok(true); //return Ok()("District deleted successfully.");
         }
 
 
@@ -260,7 +261,7 @@ namespace GoogleAPI.API.Controllers
                     ProvinceId = p.ProvinceId,
                     Description = p.Description,
                 }).ToList();
-               return Ok(models); //return Ok()(models);
+                return Ok(models); //return Ok()(models);
             }
             else
             {
@@ -270,7 +271,7 @@ namespace GoogleAPI.API.Controllers
                     ProvinceId = p.ProvinceId,
                     Description = p.Description,
                 }).ToList();
-               return Ok(models); //return Ok()(models);
+                return Ok(models); //return Ok()(models);
             }
 
         }
@@ -288,7 +289,7 @@ namespace GoogleAPI.API.Controllers
                 _context.Neighborhoods.Add(newNeighborhood);
                 await _context.SaveChangesAsync();
 
-               return Ok(true); //return Ok()("Neighborhood added successfully.");
+                return Ok(true); //return Ok()("Neighborhood added successfully.");
             }
 
             return BadRequest("Invalid data provided.");
@@ -296,7 +297,7 @@ namespace GoogleAPI.API.Controllers
 
 
         [HttpPut("update-neighborhood")]
-        public async Task<ActionResult> UpdateNeighborhood( [FromBody] Neighborhood_VM neighborhood)
+        public async Task<ActionResult> UpdateNeighborhood([FromBody] Neighborhood_VM neighborhood)
         {
             var existingNeighborhood = await _context.Neighborhoods.FindAsync(neighborhood.Id);
 
@@ -311,7 +312,7 @@ namespace GoogleAPI.API.Controllers
             _context.Neighborhoods.Update(existingNeighborhood);
             await _context.SaveChangesAsync();
 
-           return Ok(true); //return Ok()("Neighborhood updated successfully.");
+            return Ok(true); //return Ok()("Neighborhood updated successfully.");
         }
 
 
@@ -328,7 +329,7 @@ namespace GoogleAPI.API.Controllers
             _context.Neighborhoods.Remove(existingNeighborhood);
             await _context.SaveChangesAsync();
 
-           return Ok(true); //return Ok()("Neighborhood deleted successfully.");
+            return Ok(true); //return Ok()("Neighborhood deleted successfully.");
         }
 
 
@@ -344,7 +345,7 @@ namespace GoogleAPI.API.Controllers
                     DistrictId = p.DistrictId,
                     Description = p.Description,
                 }).ToList();
-               return Ok(models); //return Ok()(models);
+                return Ok(models); //return Ok()(models);
             }
             else
             {
@@ -354,7 +355,7 @@ namespace GoogleAPI.API.Controllers
                     DistrictId = p.DistrictId,
                     Description = p.Description,
                 }).ToList();
-               return Ok(models); //return Ok()(models);
+                return Ok(models); //return Ok()(models);
             }
 
         }
@@ -362,7 +363,7 @@ namespace GoogleAPI.API.Controllers
         [HttpGet("get-shipping-address/{id}")]
         public async Task<ActionResult> GetShippingAddress(int id)
         {
-            ShippingAddress? address =await  _context.ShippingAddresses.FirstOrDefaultAsync(a => a.Id == id);
+            ShippingAddress? address = await _context.ShippingAddresses.FirstOrDefaultAsync(a => a.Id == id);
             if (address == null)
             {
                 return NotFound();
@@ -385,7 +386,7 @@ namespace GoogleAPI.API.Controllers
                 TaxAuthorityDescription = address?.TaxAuthorityDescription,
                 TaxNo = address?.TaxNo,
                 UserId = address?.UserId,
-                NameSurname = user.FirstName+"-"+user.LastName,
+                NameSurname = user.FirstName + "-" + user.LastName,
                 CreatedDate = address?.CreatedDate,
                 UpdatedDate = address?.UpdatedDate,
                 // Eðer baþka özellikleriniz varsa, bunlarý da ekleyebilirsiniz.
@@ -393,7 +394,7 @@ namespace GoogleAPI.API.Controllers
 
 
 
-                return Ok(model);
+            return Ok(model);
 
         }
 

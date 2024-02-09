@@ -1,11 +1,12 @@
 ﻿using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Entities.Address;
-using GoogleAPI.Domain.Entities.Common;
+using GoogleAPI.Domain.Entities.PaymentEntities;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.Brand.ViewModel;
 using GoogleAPI.Domain.Models.Product.Dto;
 using GoogleAPI.Domain.Models.Product.ViewModel;
 using Microsoft.EntityFrameworkCore;
+using Order = GoogleAPI.Domain.Entities.Order;
 
 
 namespace GoogleAPI.Persistance.Contexts
@@ -65,7 +66,7 @@ namespace GoogleAPI.Persistance.Contexts
             #endregion
 
             //modelBuilder.Entity<BillingAddress>().HasOne(p => p.Country).WithMany(c => c.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.NoAction);
-        
+
             //modelBuilder.Entity<BillingAddress>().HasOne(p => p.Province).WithMany(c => c.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.NoAction);
             //modelBuilder.Entity<BillingAddress>().HasOne(p => p.District).WithMany(c => c.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.NoAction);
             //modelBuilder.Entity<BillingAddress>().HasOne(p => p.Neighborhood).WithMany(c => c.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.NoAction);
@@ -75,6 +76,10 @@ namespace GoogleAPI.Persistance.Contexts
             // Diğer konfigürasyonlar ve ilişkiler...
 
 
+            //modelBuilder.Entity<Order>().HasOne<Payment>().WithMany(c => c.Orders).OnDelete(DeleteBehavior.SetNull);
+
+
+            //modelBuilder.Entity<Payment>().HasOne<PaymentMethod>().WithMany(c => c.Payments).OnDelete(DeleteBehavior.SetNull);
 
         }
         public DbSet<Country>? Countries { get; set; }
@@ -106,7 +111,7 @@ namespace GoogleAPI.Persistance.Contexts
         public DbSet<Color>? Colors { get; set; }
         public DbSet<Brand>? Brands { get; set; }
         public DbSet<Photo>? Photos { get; set; }
-        public DbSet<MarketPlace>? Dimensions { get; set; }
+        public DbSet<Dimension>? Dimensions { get; set; }
         public DbSet<Category>? Categories { get; set; }
         //public DbSet<Log>? Logs { get; set; }
 
@@ -114,6 +119,10 @@ namespace GoogleAPI.Persistance.Contexts
         public DbSet<Brand_VM>? Brand_VM { get; set; }
         public DbSet<ProductCard_VM>? ProductCard_VM { get; set; }
         public DbSet<ProductDetail_DTO>? ProductDetail_DTO { get; set; }
+
+        public DbSet<Payment>? Payments { get; set; }
+
+        public DbSet<PaymentMethod>? PaymentMethods { get; set; }
 
 
         public override async Task<int> SaveChangesAsync(

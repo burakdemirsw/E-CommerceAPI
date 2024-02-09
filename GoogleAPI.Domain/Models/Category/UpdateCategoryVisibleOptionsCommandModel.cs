@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoogleAPI.Domain.Models.Category
+﻿namespace GoogleAPI.Domain.Models.Category
 {
     public class UpdateCategoryVisibleOptionsCommandModel
     {

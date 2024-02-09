@@ -1,10 +1,6 @@
 ﻿using GoogleAPI.Domain.Models.Brand.ViewModel;
 using GoogleAPI.Domain.Models.Category.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GoogleAPI.Domain.Models.Supplier.ViewModel;
 
 namespace GoogleAPI.Domain.Models.Product.ViewModel
 {
@@ -19,6 +15,8 @@ namespace GoogleAPI.Domain.Models.Product.ViewModel
         //kategorileri de ekle
         public Color_VM? Color { get; set; }
         public Brand_VM? Brand { get; set; }
+        public Supplier_VM? Supplier { get; set; }
+
         public string? Barcode { get; set; }
         public string? CoverLetter { get; set; }
         public decimal? NormalPrice { get; set; }

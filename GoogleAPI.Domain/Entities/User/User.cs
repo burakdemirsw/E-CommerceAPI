@@ -1,11 +1,4 @@
 ﻿using GoogleAPI.Domain.Entities.Common;
-using NHibernate.UserTypes;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Domain.Entities.User
 {

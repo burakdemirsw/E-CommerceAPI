@@ -1,15 +1,8 @@
-﻿using GoogleAPI.Domain.Entities;
-using GoogleAPI.Domain.Models.Product.ViewModel;
-using GoogleAPI.Domain.Models.Supplier.ViewModel;
+﻿using GoogleAPI.Domain.Models.Supplier.ViewModel;
 using GoogleAPI.Persistance.Contexts;
 using GooleAPI.Application.Abstractions.IServices.ISupplier;
 using GooleAPI.Application.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Persistance.Concreates.Services.Supplier
 {
@@ -28,7 +21,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Supplier
             _sr = cr;
         }
 
-       
+
 
         public async Task<bool> AddSupplier(Supplier_VM Supplier)
         {
@@ -37,7 +30,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Supplier
                 Domain.Entities.Supplier newSupplier = new Domain.Entities.Supplier
                 {
                     Description = Supplier.Description,
-                    
+
                 };
 
                 await _sw.AddAsync(newSupplier);
@@ -68,7 +61,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Supplier
             }
         }
 
-        public async  Task<List<Supplier_VM>> GetSupplierById(int id)
+        public async Task<List<Supplier_VM>> GetSupplierById(int id)
         {
             try
             {

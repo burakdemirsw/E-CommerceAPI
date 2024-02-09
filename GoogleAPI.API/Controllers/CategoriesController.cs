@@ -8,7 +8,6 @@ using GooleAPI.Application.Abstractions.IServices.ICategory;
 using GooleAPI.Application.Consts;
 using GooleAPI.Application.CustomAttributes;
 using GooleAPI.Application.Enums;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleAPI.API.Controllers

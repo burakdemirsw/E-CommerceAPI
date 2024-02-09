@@ -1,16 +1,8 @@
-﻿using GoogleAPI.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoogleAPI.Domain.Models.Product.Dto
+﻿namespace GoogleAPI.Domain.Models.Product.Dto
 {
     public class ProductAdd_DTO
     {
-        public  int? Id { get; set; }
+        public int? Id { get; set; }
         public string StockCode { get; set; }
 
         public string Description { get; set; }

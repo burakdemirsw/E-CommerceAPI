@@ -1,13 +1,8 @@
 ﻿using GoogleAPI.Domain.Entities.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Domain.Entities
 {
-    public class Log:BaseEntity
+    public class Log : BaseEntity
     {
         public string Message { get; set; }
         public string MessageHeader { get; set; }

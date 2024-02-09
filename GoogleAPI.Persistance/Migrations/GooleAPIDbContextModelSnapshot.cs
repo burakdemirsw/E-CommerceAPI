@@ -299,7 +299,7 @@ namespace GoogleAPI.Persistance.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Dimension");
+                    b.ToTable("Dimensions");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Endpoint", b =>
@@ -370,7 +370,7 @@ namespace GoogleAPI.Persistance.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MarketPlace");
+                    b.ToTable("MarketPlaces");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Menu", b =>
@@ -438,6 +438,76 @@ namespace GoogleAPI.Persistance.Migrations
                     b.HasIndex("ShippingAddressId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PaymentEntities.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConversationId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExceptionCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExceptionDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PaymentValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PaymentEntities.PaymentMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Personal", b =>
@@ -1019,6 +1089,9 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<string>("StockCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
@@ -1031,7 +1104,25 @@ namespace GoogleAPI.Persistance.Migrations
 
                     b.HasIndex("ColorId");
 
+                    b.HasIndex("SupplierId");
+
                     b.ToTable("ProductVariation_VM");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Models.Supplier.ViewModel.Supplier_VM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Supplier_VM");
                 });
 
             modelBuilder.Entity("EndpointRole", b =>
@@ -1142,6 +1233,23 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("MarketPlace");
 
                     b.Navigation("ShippingAddress");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PaymentEntities.Payment", b =>
+                {
+                    b.HasOne("GoogleAPI.Domain.Entities.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId");
+
+                    b.HasOne("GoogleAPI.Domain.Entities.PaymentEntities.PaymentMethod", "PaymentMethod")
+                        .WithMany("Payments")
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("PaymentMethod");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Product", b =>
@@ -1290,9 +1398,15 @@ namespace GoogleAPI.Persistance.Migrations
                         .WithMany()
                         .HasForeignKey("ColorId");
 
+                    b.HasOne("GoogleAPI.Domain.Models.Supplier.ViewModel.Supplier_VM", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId");
+
                     b.Navigation("Brand");
 
                     b.Navigation("Color");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Address.Country", b =>
@@ -1357,6 +1471,16 @@ namespace GoogleAPI.Persistance.Migrations
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Menu", b =>
                 {
                     b.Navigation("Endpoints");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Order", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PaymentEntities.PaymentMethod", b =>
+                {
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Photo", b =>

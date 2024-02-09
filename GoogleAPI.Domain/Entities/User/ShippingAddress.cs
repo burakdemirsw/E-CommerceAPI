@@ -1,12 +1,5 @@
 ﻿using GoogleAPI.Domain.Entities.Address;
 using GoogleAPI.Domain.Entities.Common;
-using NHibernate.UserTypes;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Domain.Entities.User
 {
@@ -23,19 +16,19 @@ namespace GoogleAPI.Domain.Entities.User
         //[ForeignKey(nameof(Province))]
         public int? ProvinceId { get; set; }
         public Province Province { get; set; }
-        
 
-       // [ForeignKey(nameof(District))]
+
+        // [ForeignKey(nameof(District))]
         public int? DistrictId { get; set; }
         public District District { get; set; }
 
-       // [ForeignKey(nameof(Neighborhood))]
+        // [ForeignKey(nameof(Neighborhood))]
         public int? NeighborhoodId { get; set; }
         public Neighborhood Neighborhood { get; set; }
 
         public string? PostalCode { get; set; }
         public Guid? RowGuid { get; set; }
- 
+
         public int? UserId { get; set; }
         public User User { get; set; }
 
@@ -44,7 +37,7 @@ namespace GoogleAPI.Domain.Entities.User
         public string? CorparateDescription { get; set; }
         public string? TaxAuthorityDescription { get; set; }
         public string? TaxNo { get; set; }
-        public string ?  NameSurname { get; set; }
+        public string? NameSurname { get; set; }
         public ICollection<Order> Orders { get; set; }
 
     }

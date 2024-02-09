@@ -1,15 +1,8 @@
 ﻿using GoogleAPI.Domain.Models.MarketPlace.ViewModel;
-using GoogleAPI.Domain.Models.MarketPlace.ViewModel;
 using GoogleAPI.Persistance.Contexts;
-using GooleAPI.Application.Abstractions.IServices.IMarketPlace;
 using GooleAPI.Application.Abstractions.IServices.IMarketPlace;
 using GooleAPI.Application.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleAPI.Persistance.Concreates.Services.MarketPlace
 {
@@ -40,7 +33,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.MarketPlace
                     ApiKey = MarketPlace.ApiKey,
                     ApiSecretKey = MarketPlace.ApiSecretKey,
                     SupplierId = MarketPlace.SupplierId,
-                    
+
                     CreatedDate = DateTime.Now,
 
                 };

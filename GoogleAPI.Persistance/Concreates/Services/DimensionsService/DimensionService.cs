@@ -1,6 +1,4 @@
-﻿using GoogleAPI.Domain.Entities;
-using GoogleAPI.Domain.Models.Product.ViewModel;
-using GoogleAPI.Persistance.Contexts;
+﻿using GoogleAPI.Domain.Models.Product.ViewModel;
 using GooleAPI.Application.Abstractions.IServices.IDimention;
 using GooleAPI.Application.IRepositories;
 
@@ -10,9 +8,9 @@ namespace GoogleAPI.Persistance.Concreates.Services.DimensionsService
     {
         private readonly IDimensionWriteRepository _cw;
         private readonly IDimensionReadRepository _cr;
-        public DimensionService( IDimensionWriteRepository cw, IDimensionReadRepository cr)
+        public DimensionService(IDimensionWriteRepository cw, IDimensionReadRepository cr)
         {
-            
+
             _cw = cw;
             _cr = cr;
         }

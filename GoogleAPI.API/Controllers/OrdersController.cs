@@ -3,8 +3,12 @@ using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Order.Filters;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Order.ViewModel;
+using GoogleAPI.Domain.Models.Payment.Filter;
+using GoogleAPI.Domain.Models.Payment.ViewModel;
 using GoogleAPI.Domain.Models.Response;
+using GoogleAPI.Persistance.Concreates.Services.IyzcoPayment;
 using GooleAPI.Application.Abstractions.IServices.IOrder;
+using GooleAPI.Application.Abstractions.IServices.IyzcoPayment;
 using GooleAPI.Application.Consts;
 using GooleAPI.Application.CustomAttributes;
 using GooleAPI.Application.Enums;
@@ -18,10 +22,11 @@ namespace GoogleAPI.API.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
-
-        public OrdersController(IOrderService orderService)
+        private readonly IIyzcoPayment _iyzcoPaymentService;
+        public OrdersController(IOrderService orderService, IIyzcoPayment iyzcoPaymentService)
         {
             _orderService = orderService;
+            _iyzcoPaymentService = iyzcoPaymentService;
         }
 
         [HttpGet("get-basket-items/{basketId}")]
@@ -50,8 +55,8 @@ namespace GoogleAPI.API.Controllers
             }
         }
         [HttpGet("get-order-detail/{basketId}")]
-        [Authorize(AuthenticationSchemes = "Admin")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Order Detail")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Order Detail")]
         public async Task<ActionResult<List<BasketItemList_VM>>> GetOrderDetail(int basketId)
         {
             try
@@ -59,7 +64,7 @@ namespace GoogleAPI.API.Controllers
                 // Call the service method to get basket items
                 var basketItems = await _orderService.GetOrderDetail(basketId);
 
-                if (basketItems!=null)
+                if (basketItems != null)
                 {
                     return Ok(basketItems);
                 }
@@ -78,7 +83,7 @@ namespace GoogleAPI.API.Controllers
         [HttpGet("get-orders-of-user/{userId}/{count}")]
         //[Authorize(AuthenticationSchemes = "Admin")]
         //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get User Orders")]
-        public async Task<ActionResult<List<GetOrderDetail_ResponseModel>>> GetUserOrders(int userId,int count)
+        public async Task<ActionResult<List<GetOrderDetail_ResponseModel>>> GetUserOrders(int userId, int count)
         {
             try
             {
@@ -101,7 +106,7 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-
+      
 
 
         [HttpDelete("delete-basket/{id}")]
@@ -151,14 +156,30 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpGet("get-basket/{userId}")]
-        [Authorize(AuthenticationSchemes = "Admin")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Basket")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Basket")]
         public async Task<ActionResult> GetBasket(int userId)
         {
             try
             {
                 int basketId = await _orderService.GetBasket(userId);
                 return Ok(basketId);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        [HttpGet("clear-basket-items/{basketId}")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Clear Basket Items")]
+        public async Task<ActionResult> ClearBasketItems(int basketId)
+        {
+            try
+            {
+                bool result = await _orderService.ClearBasketItems(basketId);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -193,12 +214,11 @@ namespace GoogleAPI.API.Controllers
         [HttpPost("add-item-to-basket")]
         [Authorize(AuthenticationSchemes = "Admin")]
         [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Writing, Definition = "Add Item To Basket")]
-        public async Task<ActionResult<UpdateBasketItemCommandResponse>> AddItemToBasket([FromBody] AddBasketItem_VM model)
+        public async Task<ActionResult<UpdateBasketItemCommandResponse>> AddItemToBasket(List<AddBasketItem_VM> models)
         {
             try
             {
-                // Call the service method to add the basket item
-                UpdateBasketItemCommandResponse updateBasketItemCommandResponse = await _orderService.AddItemToBasket(model);
+                UpdateBasketItemCommandResponse updateBasketItemCommandResponse = await _orderService.AddItemToBasket(models);
 
                 if (updateBasketItemCommandResponse.State)
                 {
@@ -243,7 +263,7 @@ namespace GoogleAPI.API.Controllers
         //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "GetOrders")]
         public async Task<ActionResult<ResponseModel<OrderList_VM>>> GetOrders(GetOrderListFilterCommandModel model)
         {
-           
+
             try
             {
                 var response = await _orderService.GetOrders(model);
@@ -334,7 +354,28 @@ namespace GoogleAPI.API.Controllers
         }
 
 
+        #region payment
 
+        [HttpPost("get-payments-of-order-list")]
+        public async Task<ActionResult<List<PaymentList_VM>>> GetPaymentList(PaymentFilter request)
+        {
+            List<PaymentList_VM> list = await _orderService.GetPaymentsOfOrderList(request);
+
+            return Ok(list);
+        }
+
+
+
+        [HttpGet("check-iyzco-payment-status/{conversationId}/{paymentMethodDescription}")]
+        public async Task<ActionResult<List<GetOrderDetail_ResponseModel>>> CheckIyzcoPaymentStatus(string conversationId)
+        {
+            List<GetOrderDetail_ResponseModel> models = new List<GetOrderDetail_ResponseModel>();
+            GetOrderDetail_ResponseModel response = await _orderService.CheckIyzcoPaymentStatus(conversationId);
+            models.Add(response);   
+            return Ok(models);
+        }
+
+        #endregion
 
 
         // Add other actions as needed

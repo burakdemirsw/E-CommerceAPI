@@ -1,12 +1,4 @@
-﻿using GoogleAPI.Domain.Entities.User;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoogleAPI.Domain.Models.User.ViewModel
+﻿namespace GoogleAPI.Domain.Models.User.ViewModel
 {
     public class UserList_VM
     {

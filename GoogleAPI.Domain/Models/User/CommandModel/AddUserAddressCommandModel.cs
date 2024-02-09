@@ -1,12 +1,4 @@
-﻿using GoogleAPI.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoogleAPI.Domain.Models.User.CommandModel
+﻿namespace GoogleAPI.Domain.Models.User.CommandModel
 {
     public class AddUserShippingAddressCommandModel
     {
@@ -25,12 +17,11 @@ namespace GoogleAPI.Domain.Models.User.CommandModel
         public string? TaxAuthorityDescription { get; set; }
         public string? TaxNo { get; set; }
         public string? NameSurname { get; set; }
-
         public string? PostalCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
 
     }
 
-   
+
 }

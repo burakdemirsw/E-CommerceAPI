@@ -1,10 +1,4 @@
-﻿using GoogleAPI.Domain.Entities.User;
-using GoogleAPI.Domain.Models.User.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GoogleAPI.Domain.Models.User.ViewModel;
 
 namespace GoogleAPI.Domain.Models.User
 {

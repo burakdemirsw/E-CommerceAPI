@@ -1,4 +1,5 @@
 ﻿using GoogleAPI.Domain.Models.Category.ViewModel;
+using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
 using GoogleAPI.Domain.Models.Product.Filters;
@@ -15,6 +16,9 @@ namespace GooleAPI.Application.Abstractions.IServices.IProduct
 {
     public interface IProductService
     {
+
+        Task<List<GetBasketProductsFilter_ResponseModel>> GetBasketProductsByFilter(GetBasketProductsFilter_CommandModel model);
+
         Task<List<ProductVariation_VM>> GetVariationsByFilter(string stockCode);
         Task<List<ProductDetail_VM>> GetProductsByBrandName(string brandName);
         Task<List<ProductDetail_VM>> GetSingleProductDetail(ProductCard_DTO model);
@@ -37,4 +41,5 @@ namespace GooleAPI.Application.Abstractions.IServices.IProduct
 
 
     }
+
 }

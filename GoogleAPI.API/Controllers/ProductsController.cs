@@ -1,4 +1,5 @@
 using GoogleAPI.Domain.Models.Category.ViewModel;
+using GoogleAPI.Domain.Models.Order.CommandModel;
 using GoogleAPI.Domain.Models.Product.CommandModel;
 using GoogleAPI.Domain.Models.Product.Dto;
 using GoogleAPI.Domain.Models.Product.Filters;
@@ -104,8 +105,8 @@ namespace GoogleAPI.API.Controllers
         }
 
         [HttpPost("get-variations-list")]
-        [Authorize(AuthenticationSchemes = "Admin")]
-        [AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Variations List")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Variations List")]
         public async Task<ActionResult<List<ProductVariation_VM>>> GetVariationsList(GetVariationsIdListCommandModel model)
         {
 
@@ -334,6 +335,33 @@ namespace GoogleAPI.API.Controllers
                 else
                 {
                     return BadRequest("Fotoğraf güncellenirken bir hata oluştu.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        //        Task<BasketProduct_VM> GetBasketProductsByFilter(GetBasketProductsFilter model);
+
+        [HttpPost("get-basket-product-by-filter")]
+        //[Authorize(AuthenticationSchemes = "Admin")]
+        //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Products, ActionType = ActionType.Reading, Definition = "Get Basket Products By Filter")]
+        public async Task<ActionResult<List<GetBasketProductsFilter_ResponseModel>>> GetBasketProductsByFilter(GetBasketProductsFilter_CommandModel model)
+        {
+            try
+            {
+                var result = await _productService.GetBasketProductsByFilter(model);
+
+                if (result != null)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest("Ürünler Getirilirken bir hata oluştu.");
                 }
             }
             catch (Exception ex)
