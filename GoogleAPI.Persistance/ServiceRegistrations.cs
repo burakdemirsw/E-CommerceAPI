@@ -2,10 +2,15 @@
 using GoogleAPI.Persistance;
 using GoogleAPI.Persistance.Concreates.Services.Authentication;
 using GoogleAPI.Persistance.Concreates.Services.Authorization;
+using GoogleAPI.Persistance.Concreates.Services.CargoService;
+using GoogleAPI.Persistance.Concreates.Services.CargoService.Aras;
+using GoogleAPI.Persistance.Concreates.Services.CargoService.Mng;
+using GoogleAPI.Persistance.Concreates.Services.CargoService.Yurtiçi;
 using GoogleAPI.Persistance.Concreates.Services.CategoriesService;
 using GoogleAPI.Persistance.Concreates.Services.ColorsService;
 using GoogleAPI.Persistance.Concreates.Services.Configuration;
 using GoogleAPI.Persistance.Concreates.Services.DimensionsService;
+using GoogleAPI.Persistance.Concreates.Services.FileUploadService;
 using GoogleAPI.Persistance.Concreates.Services.Helper;
 using GoogleAPI.Persistance.Concreates.Services.IyzcoPayment;
 using GoogleAPI.Persistance.Concreates.Services.Mail;
@@ -23,8 +28,13 @@ using GoogleAPI.Persistance.Services.BrandsService;
 using GooleAPI.Application.Abstractions.IServices.Authorization;
 using GooleAPI.Application.Abstractions.IServices.Common;
 using GooleAPI.Application.Abstractions.IServices.Configuration;
+using GooleAPI.Application.Abstractions.IServices.FileUploadService;
 using GooleAPI.Application.Abstractions.IServices.IAuthentication;
 using GooleAPI.Application.Abstractions.IServices.IBrand;
+using GooleAPI.Application.Abstractions.IServices.ICargo;
+using GooleAPI.Application.Abstractions.IServices.ICargo.IAras;
+using GooleAPI.Application.Abstractions.IServices.ICargo.IMng;
+using GooleAPI.Application.Abstractions.IServices.ICargo.IYurtiçi;
 using GooleAPI.Application.Abstractions.IServices.ICategory;
 using GooleAPI.Application.Abstractions.IServices.IColor;
 using GooleAPI.Application.Abstractions.IServices.IDimention;
@@ -120,14 +130,15 @@ namespace GooleAPI.Infrastructure
             services.AddScoped<IPaymentMethodReadRepository, PaymentMethodReadRepository>();
             services.AddScoped<IPaymentMethodWriteRepository, PaymentMethodWriteRepository>();
 
-
+            services.AddScoped<ICargoReadRepository, CargoReadRepository>();
+            services.AddScoped<ICargoWriteRepository, CargoWriteRepository>();
 
             services.AddScoped<IMarketPlaceReadRepository, MarketPlaceReadRepository>();
             services.AddScoped<IMarketPlaceWriteRepository, MarketPlaceWriteRepository>();
 
             services.AddScoped<IApplicationService, ApplicationService>();
             services.AddScoped<IAuthorizationEndpointService, AuthorizationEndpointService>();
-
+            services.AddScoped<IFileUploadService, FileUploadService>();
 
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
@@ -146,6 +157,12 @@ namespace GooleAPI.Infrastructure
             services.AddScoped<IRaportService, RaportService>();
             services.AddScoped<IHelperService, HelperService>();
             services.AddScoped<IIyzcoPayment, IyzcoPaymentService>();
+
+            services.AddScoped<IArasCargoService, ArasCargoService>();
+            services.AddScoped<IMNGCargoService, MngCargoService>();
+            services.AddScoped<IYurtiçiCargoService,YurtiçiCargoService>();
+            services.AddScoped<ICargoService, CargoService>();
+
 
         }
         //extention fonksiyonları

@@ -1,4 +1,5 @@
-﻿using GoogleAPI.Domain.Entities.User;
+﻿using GoogleAPI.Domain.Entities.All_Settings;
+using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.Address;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
@@ -824,6 +825,66 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 
 
             return models;
+        }
+
+        public async Task<List<MailInfo>> GetMailInfoById(int id)
+        {
+            if (id == -1)
+            {
+                List<MailInfo>? list  = _context.MailInfos.ToList();
+                return list;
+
+            }
+            else
+            {
+                List<MailInfo>? _list = _context.MailInfos.Where(m=>m.Id==id).ToList();
+                return _list;
+            }
+
+        }
+
+        public async  Task<bool> AddMailInfo(MailInfo model)
+        {
+            await _context.MailInfos.AddAsync(model);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async  Task<bool> UpdateMailInfo(MailInfo model)
+        {
+            MailInfo? mailInfo = _context.MailInfos.FirstOrDefault(m => m.Id == model.Id);
+            if(mailInfo != null)
+            {
+                mailInfo.UpdatedDate = DateTime.Now;
+                mailInfo.UserName = model.UserName;
+                mailInfo.Password = model.Password;
+                mailInfo.IsFirst  = model.IsFirst;
+                _context.MailInfos.Update(mailInfo);
+                _context.SaveChanges();
+                return true;
+            }
+            else
+            {
+                throw new Exception("Not Found");
+            }
+
+        }
+
+        public async  Task<bool> DeleteMailInfo(int id)
+        {
+            MailInfo? mailInfo = _context.MailInfos.FirstOrDefault(m => m.Id == id);
+            if (mailInfo != null)
+            {
+                
+                _context.MailInfos.Remove(mailInfo);
+                _context.SaveChanges();
+                return true;
+            }
+            else
+            {
+                throw new Exception("Not Found");
+            }
         }
 
 

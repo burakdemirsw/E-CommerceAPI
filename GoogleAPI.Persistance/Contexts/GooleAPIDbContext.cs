@@ -1,5 +1,7 @@
 ﻿using GoogleAPI.Domain.Entities;
 using GoogleAPI.Domain.Entities.Address;
+using GoogleAPI.Domain.Entities.All_Settings;
+using GoogleAPI.Domain.Entities.Cargo;
 using GoogleAPI.Domain.Entities.PaymentEntities;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.Brand.ViewModel;
@@ -79,10 +81,18 @@ namespace GoogleAPI.Persistance.Contexts
             //modelBuilder.Entity<Order>().HasOne<Payment>().WithMany(c => c.Orders).OnDelete(DeleteBehavior.SetNull);
 
 
-            //modelBuilder.Entity<Payment>().HasOne<PaymentMethod>().WithMany(c => c.Payments).OnDelete(DeleteBehavior.SetNull);
+            //modelBuilder.Entity<Payment>().HasOne<PaymentMethod>().WithMany(c => c.Payments).OnDelete(DeleteBehavior.SetNull); PaymentFirmInfo CompanyInfo
 
         }
+        public DbSet<MailInfo>? MailInfos{ get; set; }
+        //public DbSet<PaymentFirmInfo>? PaymentFirmInfos { get; set; }
+        public DbSet<CompanyInfo>? CompanyInfos { get; set; }
+        public DbSet<PopUp>? PopUps { get; set; }
+        public DbSet<PopUpType>? PopUpTypes { get; set; }
+
+
         public DbSet<Country>? Countries { get; set; }
+        public DbSet<CargoFirm>? CargoFirms { get; set; }
 
         public DbSet<Province>? Provinces { get; set; }
 

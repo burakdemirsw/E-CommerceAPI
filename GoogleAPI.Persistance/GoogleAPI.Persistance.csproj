@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.66.0.3309" />
     <PackageReference Include="Google.Cloud.Translate.V3" Version="3.3.0" />
     <PackageReference Include="Iyzipay" Version="2.1.61" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.38" />
@@ -26,6 +27,12 @@
     <PackageReference Include="Nancy" Version="2.0.0" />
     <PackageReference Include="PuppeteerSharp" Version="10.1.2" />
     <PackageReference Include="QRCoder" Version="1.4.3" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+    <PackageReference Include="System.ServiceModel.Duplex" Version="4.10.*" />
+    <PackageReference Include="System.ServiceModel.Federation" Version="4.10.*" />
+    <PackageReference Include="System.ServiceModel.Http" Version="4.10.*" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.10.*" />
+    <PackageReference Include="System.ServiceModel.Security" Version="4.10.*" />
     <PackageReference Include="ZXing.Net" Version="0.16.9" />
   </ItemGroup>
 

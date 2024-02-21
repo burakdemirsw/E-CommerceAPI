@@ -1,4 +1,7 @@
-﻿using GoogleAPI.Domain.Models.Payment;
+﻿using FluentNHibernate.Mapping;
+using GoogleAPI.Domain.Entities.All_Settings;
+using GoogleAPI.Domain.Entities.PaymentEntities;
+using GoogleAPI.Domain.Models.Payment;
 using GoogleAPI.Domain.Models.Payment.Cart;
 using GoogleAPI.Domain.Models.Payment.CommandResponse;
 using GoogleAPI.Domain.Models.Payment.Filter;
@@ -101,6 +104,15 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
             {
                 Description = pm.Description,
                 Id = pm.Id,
+                IsActive = pm.IsActive,
+                MerchantId = pm.MerchantId,
+                ApiKey = pm.ApiKey,
+                ApiSecretKey = pm.ApiSecretKey,
+                OkUrl = pm.OkUrl,
+                FailUrl  = pm.FailUrl,
+                SpecialField = pm.SpecialField,
+                SpecialField_2 = pm.SpecialField_2,
+                SpecialField_3 = pm.SpecialField_3,
 
             }).ToListAsync();
 
@@ -375,8 +387,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
                 string user_namestr = model.User.Email;
                 string user_phonestr = model.User.PhoneNumber;
                 string user_addressstr = model.Address.AddressDescription;
-                string merchant_ok_url = _configuration["Payment:PayTR:OkUrl"] + CD;
-                string merchant_fail_url = _configuration["Payment:PayTR:FailUrl"] + CD;
+                string merchant_ok_url = _configuration["Payment:PayTR:OkUrl"];
+                string merchant_fail_url = _configuration["Payment:PayTR:FailUrl"];
                 string user_ip = "176.227.56.29";
                 List<Product_PayTR> user_basket = new List<Product_PayTR> { };
                 Console.WriteLine(merchant_oid);
@@ -396,8 +408,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
                     user_basket.Add(newProduct);
                 }
                 string timeout_limit = "30";
-                string debug_on = "1";
-                string test_mode = "1";
+                string debug_on = "0";
+                string test_mode = "0";
                 string no_installment = "0";
                 string max_installment = "0";
                 string currency = "TL";
@@ -492,5 +504,65 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
             }
         }
 
+     
+
+        public async  Task<bool> AddPaymentMethod(PaymentMethod_VM request)
+        {
+            PaymentMethod? paymentMethod = new PaymentMethod();
+
+            paymentMethod.Description = request.Description;
+            paymentMethod.IsActive = request.IsActive;
+            paymentMethod.MerchantId = request.MerchantId;
+            paymentMethod.ApiKey = request.ApiKey;
+            paymentMethod.ApiSecretKey = request.ApiSecretKey;
+            paymentMethod.OkUrl = request.OkUrl;
+            paymentMethod.FailUrl = request.FailUrl;
+
+            bool response = await _pmw.AddAsync(paymentMethod);
+            return response;
+
+        }
+
+        public async Task<bool> UpdatePaymentMethod(PaymentMethod_VM request)
+        {
+            PaymentMethod? paymentMethod = _c.PaymentMethods.FirstOrDefault(p => p.Description.Contains(request.Description));
+
+            paymentMethod.Description = request.Description;
+            paymentMethod.IsActive = request.IsActive;
+            paymentMethod.MerchantId = request.MerchantId;
+            paymentMethod.ApiKey = request.ApiKey;
+            paymentMethod.ApiSecretKey = request.ApiSecretKey;
+            paymentMethod.OkUrl = request.OkUrl;
+            paymentMethod.FailUrl = request.FailUrl;
+
+            if (paymentMethod != null)
+            {
+                bool response =await  _pmw.Update(paymentMethod);
+                return response;
+
+
+            }
+            else
+            {
+                throw new Exception("Not Found");
+            }
+        }
+
+        public async Task<bool> DeletePaymentMethod(int paymentMethodId)
+        {
+            PaymentMethod? paymentMethod = _c.PaymentMethods.FirstOrDefault(p => p.Id == paymentMethodId);
+
+            if (paymentMethod != null)
+            {
+                bool response =  _pmw.Remove(paymentMethod); 
+                return response;
+
+
+            }
+            else
+            {
+                throw new Exception("Not Found");
+            }
+        }
     }
 }

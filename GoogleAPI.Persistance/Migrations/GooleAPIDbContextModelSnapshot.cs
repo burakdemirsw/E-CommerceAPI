@@ -140,6 +140,107 @@ namespace GoogleAPI.Persistance.Migrations
                     b.ToTable("Provinces");
                 });
 
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.All_Settings.CompanyInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AuthorizedPerson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyCity")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyCountry")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyDistrict")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Fax")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MersisNo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordResetUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ServiceSector")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxOffice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TradeRegistryNo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WebSiteUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CompanyInfos");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.All_Settings.MailInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsFirst")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MailInfos");
+                });
+
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Basket", b =>
                 {
                     b.Property<int>("Id")
@@ -223,6 +324,109 @@ namespace GoogleAPI.Persistance.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.Cargo.CargoFirm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ApiSecretKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("BPC_LowerPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BPC_Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BPC_UpperPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CCPC_LowerPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CCPC_Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CCPC_UpperPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CPC_LowerPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CPC_Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CPC_UpperPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CargoPaymentDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsBPCActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCCPCActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCPCActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSPCActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("SPC_LowerPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SPC_Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SPC_UpperPriceLimit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("isDifferentBarcode")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("isZPLBarcode")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CargoFirms");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Category", b =>
@@ -495,11 +699,38 @@ namespace GoogleAPI.Persistance.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ApiSecretKey")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MerchantId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OkUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpecialField")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpecialField_2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpecialField_3")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
@@ -561,6 +792,73 @@ namespace GoogleAPI.Persistance.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Photos");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PopUp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Desription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PopUpTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Time")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PopUpTypeId");
+
+                    b.ToTable("PopUps");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PopUpType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Desription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PopUpTypes");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Product", b =>
@@ -1252,6 +1550,17 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("PaymentMethod");
                 });
 
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PopUp", b =>
+                {
+                    b.HasOne("GoogleAPI.Domain.Entities.PopUpType", "PopUpType")
+                        .WithMany("PopUps")
+                        .HasForeignKey("PopUpTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PopUpType");
+                });
+
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Product", b =>
                 {
                     b.HasOne("GoogleAPI.Domain.Entities.Brand", "Brand")
@@ -1486,6 +1795,11 @@ namespace GoogleAPI.Persistance.Migrations
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Photo", b =>
                 {
                     b.Navigation("ProductPhotos");
+                });
+
+            modelBuilder.Entity("GoogleAPI.Domain.Entities.PopUpType", b =>
+                {
+                    b.Navigation("PopUps");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Product", b =>

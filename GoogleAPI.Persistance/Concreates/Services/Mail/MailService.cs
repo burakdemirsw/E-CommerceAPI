@@ -1,4 +1,6 @@
-﻿using GooleAPI.Application.Abstractions.IServices.IMail;
+﻿using GoogleAPI.Domain.Entities.All_Settings;
+using GoogleAPI.Persistance.Contexts;
+using GooleAPI.Application.Abstractions.IServices.IMail;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
@@ -9,42 +11,53 @@ namespace GoogleAPI.Persistance.Concreates.Services.Mail
     public class MailService : IMailService
     {
         readonly IConfiguration _configuration;
-        public MailService(IConfiguration configuration)
+        private readonly GooleAPIDbContext _context;
+        public MailService(IConfiguration configuration , GooleAPIDbContext context)
         {
             _configuration = configuration;
+            _context = context;
         }
 
         public async Task SendMail(List<string> addressList, string subject, string body, bool isBodyHtml)
         {
-            MailMessage mail = new MailMessage();
-            mail.IsBodyHtml = isBodyHtml;
-            foreach (string address in addressList)
-                mail.To.Add(address);
-            mail.Subject = subject;
-            mail.Body = body;
-            mail.From = new MailAddress(_configuration["Mail:UserName"], _configuration["Company:Description"], Encoding.UTF8);
+            MailInfo?  mailInfo = _context.MailInfos.FirstOrDefault(m=>m.IsFirst ==true);
+            CompanyInfo? companyInfo = _context.CompanyInfos.FirstOrDefault();
+            if(mailInfo != null && companyInfo != null)
+            {
+                MailMessage mail = new MailMessage();
+                mail.IsBodyHtml = isBodyHtml;
+                foreach (string address in addressList)
+                    mail.To.Add(address);
+                mail.Subject = subject;
+                mail.Body = body;
+                mail.From = new MailAddress(mailInfo.UserName, companyInfo.CompanyName, Encoding.UTF8);
 
 
-            SmtpClient client = new SmtpClient("smtp.office365.com", 587);
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(
-                _configuration["Mail:UserName"],
-                _configuration["Mail:Password"]
-            );
-            client.EnableSsl = true;
-            await client.SendMailAsync(mail);
+                SmtpClient client = new SmtpClient("smtp.office365.com", 587);
+                client.UseDefaultCredentials = false;
+                client.Credentials = new NetworkCredential(
+                   mailInfo.UserName,
+                    mailInfo.Password
+                );
+                client.EnableSsl = true;
+                await client.SendMailAsync(mail);
+            }
+           
 
 
         }
 
         public async Task SendPasswordResetEmail(string email, string userId, string resetToken)
         {
+            CompanyInfo? companyInfo = _context.CompanyInfos.FirstOrDefault();
+            if ( companyInfo != null)
+            {
 
-            var returnUrl = $"{_configuration["Company:AdminPassowordResetUrl"]}/{userId}/{resetToken}";
-            var mail = await File.ReadAllTextAsync("C://code//resetPasswordEmail.txt");
-            mail = mail.Replace("[LOGOURL]", _configuration["Company:LogoUrl"]).Replace("[WEBSITEURL]", _configuration["Company:WebSiteUrl"]).Replace("[RETURNURL]", returnUrl);
-            await SendMail(new List<string>() { email }, "Şifre Yenileme Talebi", mail, true);
-
+                var returnUrl = $"{companyInfo.PasswordResetUrl}/{userId}/{resetToken}";
+                var mail = await File.ReadAllTextAsync("C://code//resetPasswordEmail.txt");
+                mail = mail.Replace("[LOGOURL]", companyInfo.LogoUrl).Replace("[WEBSITEURL]", companyInfo.WebSiteUrl).Replace("[RETURNURL]", returnUrl);
+                await SendMail(new List<string>() { email }, "Şifre Yenileme Talebi", mail, true);
+            }
 
         }
     }

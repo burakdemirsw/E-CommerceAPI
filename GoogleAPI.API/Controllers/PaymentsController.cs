@@ -238,13 +238,7 @@ namespace GoogleAPI.API.Controllers
             return Ok(model);
         }
 
-        [HttpPost("get-payment-method-list")]
-        public async Task<ActionResult<List<PaymentMethod_VM>>> GetPaymentMethodList( )
-        {
-            List<PaymentMethod_VM> list = await _iyzcoPaymentService.GetPaymentMethodList();
-
-            return Ok(list);
-        }
+      
 
       
         [HttpGet("update-payment-status/{paymentId}/{status}")]
@@ -288,7 +282,7 @@ namespace GoogleAPI.API.Controllers
                 string ResultAuthTicket = Encoding.UTF8.GetString(result);
                 dynamic json = JValue.Parse(ResultAuthTicket);
 
-                return Ok(json);    
+                return Ok(json);
             }
         }
 
@@ -307,6 +301,31 @@ namespace GoogleAPI.API.Controllers
             data["paytr_token"] = Convert.ToBase64String(b);
 
             return data;
+        }
+
+
+        [HttpGet("get-payment-method-list")]
+        public async Task<ActionResult<List<PaymentMethod_VM>>> GetPaymentMethodList( )
+        {
+            List<PaymentMethod_VM> list = await _iyzcoPaymentService.GetPaymentMethodList();
+
+            return Ok(list);
+        }
+
+        [HttpPost("update-payment-method")]
+        public async Task<ActionResult<bool>> UpdatePaymentFirmInfo(PaymentMethod_VM request)
+        {
+            bool response = await _iyzcoPaymentService.UpdatePaymentMethod(request);
+
+            return Ok(response);
+        }
+
+        [HttpDelete("delete-payment-method")]
+        public async Task<ActionResult<bool>> UpdatePaymentMethod(PaymentMethod_VM request)
+        {
+            bool response = await _iyzcoPaymentService.UpdatePaymentMethod(request);
+
+            return Ok(response);
         }
 
 

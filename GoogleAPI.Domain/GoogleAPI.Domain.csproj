@@ -17,6 +17,8 @@
     <Folder Include="Models\Brand\Dto\" />
     <Folder Include="Models\Brand\Filters\" />
     <Folder Include="Models\Brand\ResponseModel\" />
+    <Folder Include="Models\Cargo\Aras\" />
+    <Folder Include="Models\Cargo\Yurtiçi\" />
     <Folder Include="Models\Category\Filters\" />
     <Folder Include="Models\Category\ResponseModel\" />
     <Folder Include="Models\Order\Dto\" />

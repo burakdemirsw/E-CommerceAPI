@@ -57,12 +57,12 @@ namespace GoogleAPI.API.Controllers
         [HttpGet("get-order-detail/{basketId}")]
         //[Authorize(AuthenticationSchemes = "Admin")]
         //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Orders, ActionType = ActionType.Reading, Definition = "Get Order Detail")]
-        public async Task<ActionResult<List<BasketItemList_VM>>> GetOrderDetail(int basketId)
+        public async Task<ActionResult<GetOrderDetail_ResponseModel>> GetOrderDetail(int basketId)
         {
             try
             {
                 // Call the service method to get basket items
-                var basketItems = await _orderService.GetOrderDetail(basketId);
+                GetOrderDetail_ResponseModel basketItems = await _orderService.GetOrderDetail(basketId);
 
                 if (basketItems != null)
                 {
@@ -373,6 +373,13 @@ namespace GoogleAPI.API.Controllers
             GetOrderDetail_ResponseModel response = await _orderService.CheckIyzcoPaymentStatus(conversationId);
             models.Add(response);   
             return Ok(models);
+        }
+
+        [HttpGet("ReturnOk")]
+        public  ActionResult ReturnOk ()
+        {
+            Console.WriteLine("OK");
+            return Ok();
         }
 
         #endregion

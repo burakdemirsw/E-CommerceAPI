@@ -1,6 +1,8 @@
 ﻿
+using GoogleAPI.Domain.Entities.All_Settings;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.Address;
+using GoogleAPI.Domain.Models.Brand.ViewModel;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
 using GoogleAPI.Domain.Models.User.Filters;
@@ -52,6 +54,13 @@ namespace GooleAPI.Application.Abstractions.IServices.IUser
         Task<bool> ConfirmPasswordToken(string passwordToken);
         Task<bool> PasswordReset(PasswordRequest_CM model);
 
+        #endregion
+        #region mail
+        Task<List<MailInfo>> GetMailInfoById(int id);
+        Task<bool> AddMailInfo(MailInfo model);
+        Task<bool> UpdateMailInfo(MailInfo model);
+
+        Task<bool> DeleteMailInfo(int id);
         #endregion
 
     }

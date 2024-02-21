@@ -1,4 +1,5 @@
-﻿using GoogleAPI.Domain.Models;
+﻿using GoogleAPI.Domain.Entities.All_Settings;
+using GoogleAPI.Domain.Models;
 using GoogleAPI.Domain.Models.Payment;
 using GoogleAPI.Domain.Models.Payment.CommandResponse;
 using GoogleAPI.Domain.Models.Payment.Filter;
@@ -24,7 +25,7 @@ namespace GooleAPI.Application.Abstractions.IServices.IyzcoPayment
         Task<CreditCardPayment_CommandResponse> PayTRPayment(Payment_CommandModel model);
         //-------------------------------------------------------------------------
         //ödeme tiplerini çek
-        Task<List<PaymentMethod_VM>> GetPaymentMethodList();
+
         //ödeme listeleme 
 
         //ödeme durumu güncellme
@@ -34,16 +35,11 @@ namespace GooleAPI.Application.Abstractions.IServices.IyzcoPayment
         //ödeme silme
         Task<bool> DeletePayment(int request);
 
-
-
+        //ödeme entegrasyonları
+        Task<List<PaymentMethod_VM>> GetPaymentMethodList( );
+        Task<bool> AddPaymentMethod(PaymentMethod_VM request);
+        Task<bool> UpdatePaymentMethod(PaymentMethod_VM request);
+        Task<bool> DeletePaymentMethod(int paymentMethodId);
     }
-
-
-
-    
-
-   
-
-   
 
 }

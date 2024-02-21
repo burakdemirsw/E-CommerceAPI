@@ -1,3 +1,4 @@
+using GoogleAPI.Domain.Entities.All_Settings;
 using GoogleAPI.Domain.Models.Address;
 using GoogleAPI.Domain.Models.User;
 using GoogleAPI.Domain.Models.User.CommandModel;
@@ -375,6 +376,66 @@ namespace GoogleAPI.API.Controllers
             var response = await _userService.PasswordReset(model);
             return Ok(response);
         }
+        #endregion
+
+        #region mail
+
+        [HttpGet("get-mail-info-by-id/{id}")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        public async Task<ActionResult<List<MailInfo>>> GetMailInfoById(int id)
+        {
+            List<MailInfo> models = await _userService.GetMailInfoById(id);
+            if (models.Count > 0)
+            {
+                return Ok(models);
+            }
+            else
+            {
+                return BadRequest(id);
+            }
+        }
+
+        [HttpGet("add-mail-info")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        public async Task<IActionResult> AddMailInfo(MailInfo model)
+        {
+            bool state = await _userService.AddMailInfo(model);
+            if (state)
+            {
+                return Ok(state);
+            }
+            else
+            {
+                return BadRequest(state);
+            }
+        }
+
+        [HttpDelete("delete-mail-info")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        public async Task<IActionResult> DeleteMailInfo(int id)
+        {
+            bool state = await _userService.DeleteMailInfo(id);
+            if (state)
+            {
+                return Ok(state);
+            }
+            else
+            {
+                return BadRequest(state);
+            }
+        }
+
+        [HttpPost("update-mail-info")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        public async Task<IActionResult> UpdateMailInfo(MailInfo model)
+        {
+            bool state = await _userService.UpdateMailInfo(model);
+            if (state)
+            {
+                return Ok(state);
+            }
+            else
+            {
+                return BadRequest(state);
+            }
+        }
+
         #endregion
     }
 }
