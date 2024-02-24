@@ -2,6 +2,7 @@
 using GoogleAPI.Domain.Entities.Address;
 using GoogleAPI.Domain.Entities.All_Settings;
 using GoogleAPI.Domain.Entities.Cargo;
+using GoogleAPI.Domain.Entities.Common;
 using GoogleAPI.Domain.Entities.PaymentEntities;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models.Brand.ViewModel;
@@ -19,7 +20,7 @@ namespace GoogleAPI.Persistance.Contexts
         public GooleAPIDbContext(DbContextOptions options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+           
             //foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             //{
             //    if (entityType.ClrType.IsSubclassOf(typeof(BaseEntity)))
@@ -30,6 +31,7 @@ namespace GoogleAPI.Persistance.Contexts
             //    }
             //}
             #region products
+
             modelBuilder.Entity<ProductCategory>()
             .HasKey(pp => new { pp.ProductId, pp.CategoryId });
 
@@ -63,7 +65,17 @@ namespace GoogleAPI.Persistance.Contexts
            .HasKey(pp => new { pp.UserId, pp.RoleId });
             //modelBuilder.Entity<User>().HasOne(p => p.Role).WithMany(c => c.Users).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
             //modelBuilder.Entity<BillingAddress>().HasOne(u => u.User).WithMany(b => b.BillingAddresses).IsRequired(false).OnDelete(DeleteBehavior.Restrict); // Silme davranışını özelleştirir
-
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(e => e.IsOrderBanned)
+                      .HasDefaultValue(false);
+                entity.Property(e => e.IsRemitPaymentBanned)
+                    .HasDefaultValue(false)
+                            .HasDefaultValue(false);
+                entity.Property(e => e.IsRemitPaymentBanned)
+                    .HasDefaultValue(false);
+              
+            });
 
             #endregion
 
@@ -107,6 +119,14 @@ namespace GoogleAPI.Persistance.Contexts
         public DbSet<ShippingAddress>? ShippingAddresses { get; set; }
         public DbSet<Supplier>? Suppliers { get; set; }
         public DbSet<Order>? Orders { get; set; }
+        public DbSet<OrderStatus>? OrderStatuses { get; set; }
+
+        public DbSet<OrderShipmentStatus>? OrderShipmentStatuses { get; set; }
+
+        public DbSet<OrderPaymentStatus>? OrderPaymentStatuses { get; set; }
+
+        public DbSet<OrderProvider>? OrderProviders { get; set; }
+
         public DbSet<Basket>? Baskets { get; set; }
         public DbSet<BasketItem>? BasketItems { get; set; }
         public DbSet<ProductPhoto>? ProductPhotos { get; set; }

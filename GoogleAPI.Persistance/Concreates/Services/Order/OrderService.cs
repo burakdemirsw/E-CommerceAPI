@@ -224,9 +224,12 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                                                 select user.FirstName + " " + user.LastName).FirstOrDefault();
 
                 orderList_VM.CreatedDate = o.CreatedDate;
-                orderList_VM.Provider = "WhatsApp";
                 orderList_VM.Items = await GetBasketItems(o.BasketId);
                 orderList_VM.BasketId = o.BasketId;
+                orderList_VM.OrderStatus = _context.OrderStatuses.FirstOrDefault(os=>os.Id == o.OrderStatusId)?.Description;
+                orderList_VM.OrderProvider = _context.OrderProviders.FirstOrDefault(os => os.Id == o.OrderProviderId)?.Description;
+                orderList_VM.OrderShipmentStatus = _context.OrderShipmentStatuses.FirstOrDefault(os => os.Id == o.OrderShipmentStatusId)?.Description;
+                orderList_VM.OrderPaymentStatus = _context.OrderPaymentStatuses.FirstOrDefault(os => os.Id == o.OrderPaymentStatusId)?.Description;
 
                 // TotalValue hesaplama işlemi
                 decimal totalValue = (await (from bi in _context.BasketItems
@@ -423,6 +426,12 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
             order.ShippingAddressId = model.ShippingAddressId; //kullanıcı farklı bir fatura adresi verebilir
             order.CreatedDate = DateTime.Now;
             order.IsCompleted = true;
+
+            order.MarketPlaceId=  model.MarketPlaceId;
+            order.OrderProviderId = model.OrderProviderId;
+            order.OrderShipmentStatusId = model.OrderShipmentStatusId;
+            order.OrderPaymentStatusId = model.OrderPaymentStatusId;    
+            order.OrderStatusId = model.OrderStatusId;
             bool response = await _ow.AddAsync(order);
 
             return response;
@@ -496,6 +505,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                         UserId = user.Id,
                         NameSurname = user.FirstName + " " + user.LastName,
                         PhoneNumber = user.PhoneNumber,
+                        Email = user.Email
 
                     };
 
@@ -599,10 +609,11 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                     }
                    
 
-                    ResponseModel<OrderList_VM> _response = await GetOrders(filter);
+                    ResponseModel<OrderList_VM>? _response = await GetOrders(filter);
 
                     if (_response.Datas != null)
                     {
+                        response.OrderDetail = null;
                     }
                     if (_response.Datas.Count > 0)
                     {

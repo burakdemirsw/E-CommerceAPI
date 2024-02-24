@@ -199,7 +199,10 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
                     user.Email = model.Email;
                     user.SubscribeToPromotions = model.SubscribeToPromotions;
                     user.ShippingAddresses = null;
-
+                    user.Gender = model.Gender;
+                    user.IsOrderBanned = model.IsOrderBanned;
+                    user.IsPayAtDoorBanned = model.IsPayAtDoorBanned;
+                    user.IsRemitPaymentBanned = model.IsPayAtDoorBanned;
 
                     bool response = await _uw.AddAsync(user);
 
@@ -255,11 +258,17 @@ namespace GoogleAPI.Persistance.Concreates.Services.UserAndAuthentication
 
                         checkUserById.FirstName = model.FirstName;
                         checkUserById.LastName = model.LastName;
-                        checkUserById.Password = model.Password;
+                        checkUserById.Password = _helperService.ComputeHMACSHA256(model.Password, _configuration["Password:SecurityKey"]);
                         checkUserById.PhoneNumber = model.PhoneNumber;
                         checkUserById.Email = model.Email;
                         checkUserById.SubscribeToPromotions = model.SubscribeToPromotions;
                         checkUserById.ShippingAddresses = null;
+                        checkUserById.Gender = model.Gender;
+                        checkUserById.IsOrderBanned = model.IsOrderBanned;
+                        checkUserById.IsPayAtDoorBanned = model.IsPayAtDoorBanned;
+                        checkUserById.IsRemitPaymentBanned = model.IsPayAtDoorBanned;
+
+
                         List<RoleUser>? roleUsers = await _context.RoleUsers.Where(ru => ru.UserId == model.Id).ToListAsync();
                         if (roleUsers != null)
                         {

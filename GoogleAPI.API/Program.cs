@@ -133,9 +133,9 @@ app.UseCors(); // CORS özelliðini etkinleþtiriyoruz.
 app.UseHttpsRedirection(); // HTTPS'e yönlendirme yapýlýyor.
 app.UseAuthentication();
 app.UseAuthorization(); // Yetkilendirme iþlemleri için kullanýlýyor.
-app.UseSerilogRequestLogging();
-app.UseHttpLogging();
-app.UseMiddleware<LogUserNameMiddleware>();
+//app.UseSerilogRequestLogging();
+//app.UseHttpLogging();
+//app.UseMiddleware<LogUserNameMiddleware>();
 
 app.MapControllers(); // Controller'lara yönlendirme yapýlýyor.
 

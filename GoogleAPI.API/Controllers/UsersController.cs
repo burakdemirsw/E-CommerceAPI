@@ -65,10 +65,6 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-
-
-
-
         [HttpPost("login")]
         //[Authorize(AuthenticationSchemes = "Admin")]
         //[AuthorizeDefinition(Menu = AuthorizeDefinitionConstants.Users, ActionType = ActionType.Reading, Definition = "Login")]
@@ -394,7 +390,7 @@ namespace GoogleAPI.API.Controllers
             }
         }
 
-        [HttpGet("add-mail-info")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
+        [HttpPost("add-mail-info")] //AssignRoleEndpointAsync(AssignRoleUserCommandRequest
         public async Task<IActionResult> AddMailInfo(MailInfo model)
         {
             bool state = await _userService.AddMailInfo(model);

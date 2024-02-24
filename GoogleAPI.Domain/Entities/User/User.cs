@@ -30,7 +30,10 @@ namespace GoogleAPI.Domain.Entities.User
 
         public DateTime? LastCreateNewPasswordEmailDate { get; set; }
 
-
+        public bool? IsOrderBanned { get; set; }
+        public bool? IsRemitPaymentBanned { get; set; }
+        public bool? IsPayAtDoorBanned { get; set; }
+        public string? Gender { get; set; }
         // public UserCommunicationInfo? UserCommunucationInfo { get; set; }
 
 

@@ -32,7 +32,7 @@ namespace GoogleAPI.API.Extentions
                                     StatusCode = context.Response.StatusCode,
                                     Message = contextFeature.Error.Message,
                                     Title = "Hata alındı",
-                                    InnerException = contextFeature.Error.StackTrace
+                                    InnerException = contextFeature.Error.InnerException
                                 }
                             )
                         );

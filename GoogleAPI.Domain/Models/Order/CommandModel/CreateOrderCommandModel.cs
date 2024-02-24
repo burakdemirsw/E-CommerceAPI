@@ -7,5 +7,10 @@
         public int? ShippingAddressId { get; set; }
         public int BasketId { get; set; }
         public bool IsCompleted { get; set; }
+        public int? MarketPlaceId { get; set; }
+        public int? OrderStatusId { get; set; }
+        public int? OrderShipmentStatusId { get; set; }
+        public int? OrderPaymentStatusId { get; set; }
+        public int? OrderProviderId { get; set; }
     }
 }

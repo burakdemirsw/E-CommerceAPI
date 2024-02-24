@@ -26,7 +26,38 @@ namespace GoogleAPI.Domain.Entities
 
 
         public ICollection<Payment> Payments { get; set; }
+
+        public OrderStatus OrderStatus { get; set; }
+        public int? OrderStatusId { get; set; }
+        public OrderShipmentStatus OrderShipmentStatus { get; set; }
+        public int? OrderShipmentStatusId { get; set; }
+        public OrderPaymentStatus OrderPaymentStatus { get; set; }
+        public int? OrderPaymentStatusId { get; set; }
+        public OrderProvider OrderProvider { get; set; }
+        public int? OrderProviderId { get; set; }
         //public int? PaymentId { get; set; } = 0;
         //public Payment Payment { get; set; }
+    }
+
+    public class OrderStatus : BaseEntity
+    {
+        public string Description { get; set; }
+        public ICollection<Order> Orders { get; set; }
+    }
+
+    public class OrderShipmentStatus : BaseEntity
+    {
+        public string Description { get; set; }
+        public ICollection<Order> Orders { get; set; }
+    }
+    public class OrderPaymentStatus : BaseEntity
+    {
+        public string Description { get; set; }
+        public ICollection<Order> Orders { get; set; }
+    }
+    public class OrderProvider  :BaseEntity
+    {
+        public string Description { get; set; }
+        public ICollection<Order> Orders { get; set; }
     }
 }

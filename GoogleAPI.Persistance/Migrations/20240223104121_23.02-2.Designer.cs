@@ -4,6 +4,7 @@ using GoogleAPI.Persistance.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoogleAPI.Persistance.Migrations
 {
     [DbContext(typeof(GooleAPIDbContext))]
-    partial class GooleAPIDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240223104121_23.02-2")]
+    partial class _23022
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -626,18 +629,6 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Property<Guid>("OrderNo")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("OrderPaymentStatusId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OrderProviderId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OrderShipmentStatusId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OrderStatusId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ShippingAddressId")
                         .HasColumnType("int");
 
@@ -651,109 +642,9 @@ namespace GoogleAPI.Persistance.Migrations
 
                     b.HasIndex("MarketPlaceId");
 
-                    b.HasIndex("OrderPaymentStatusId");
-
-                    b.HasIndex("OrderProviderId");
-
-                    b.HasIndex("OrderShipmentStatusId");
-
-                    b.HasIndex("OrderStatusId");
-
                     b.HasIndex("ShippingAddressId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderPaymentStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrderPaymentStatuses");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderProvider", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrderProviders");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderShipmentStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrderShipmentStatuses");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrderStatuses");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.PaymentEntities.Payment", b =>
@@ -1263,9 +1154,7 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsRemitPaymentBanned")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastCreateNewPasswordEmailDate")
                         .HasColumnType("datetime2");
@@ -1649,22 +1538,6 @@ namespace GoogleAPI.Persistance.Migrations
                         .HasForeignKey("MarketPlaceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("GoogleAPI.Domain.Entities.OrderPaymentStatus", "OrderPaymentStatus")
-                        .WithMany("Orders")
-                        .HasForeignKey("OrderPaymentStatusId");
-
-                    b.HasOne("GoogleAPI.Domain.Entities.OrderProvider", "OrderProvider")
-                        .WithMany("Orders")
-                        .HasForeignKey("OrderProviderId");
-
-                    b.HasOne("GoogleAPI.Domain.Entities.OrderShipmentStatus", "OrderShipmentStatus")
-                        .WithMany("Orders")
-                        .HasForeignKey("OrderShipmentStatusId");
-
-                    b.HasOne("GoogleAPI.Domain.Entities.OrderStatus", "OrderStatus")
-                        .WithMany("Orders")
-                        .HasForeignKey("OrderStatusId");
-
                     b.HasOne("GoogleAPI.Domain.Entities.User.ShippingAddress", "ShippingAddress")
                         .WithMany("Orders")
                         .HasForeignKey("ShippingAddressId")
@@ -1673,14 +1546,6 @@ namespace GoogleAPI.Persistance.Migrations
                     b.Navigation("Basket");
 
                     b.Navigation("MarketPlace");
-
-                    b.Navigation("OrderPaymentStatus");
-
-                    b.Navigation("OrderProvider");
-
-                    b.Navigation("OrderShipmentStatus");
-
-                    b.Navigation("OrderStatus");
 
                     b.Navigation("ShippingAddress");
                 });
@@ -1937,26 +1802,6 @@ namespace GoogleAPI.Persistance.Migrations
             modelBuilder.Entity("GoogleAPI.Domain.Entities.Order", b =>
                 {
                     b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderPaymentStatus", b =>
-                {
-                    b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderProvider", b =>
-                {
-                    b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderShipmentStatus", b =>
-                {
-                    b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("GoogleAPI.Domain.Entities.OrderStatus", b =>
-                {
-                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("GoogleAPI.Domain.Entities.PaymentEntities.PaymentMethod", b =>

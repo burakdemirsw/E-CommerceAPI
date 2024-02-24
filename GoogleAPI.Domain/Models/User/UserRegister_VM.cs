@@ -13,6 +13,10 @@ namespace GoogleAPI.Domain.Models.User
         public string? PhoneNumber { get; set; }
 
         public List<Role_VM>? Roles { get; set; }
+        public bool? IsOrderBanned { get; set; }
+        public bool? IsRemitPaymentBanned { get; set; }
+        public bool? IsPayAtDoorBanned { get; set; }
+        public string? Gender { get; set; }
         //public UserCommunicationInfo_VM UserCommunicationInfo { get; set; }
 
     }
