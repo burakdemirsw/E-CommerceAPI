@@ -24,7 +24,7 @@ namespace GooleAPI.Application.Abstractions.IServices.IyzcoPayment
 
         Task<CreditCardPayment_CommandResponse> PayTRPayment(Payment_CommandModel model);
 
-        Task<CreditCardPayment_CommandResponse> OtherPayments(int basketId,string paymentDescription);
+        Task<CreditCardPayment_CommandResponse> OtherPayments(int basketId, string paymentDescription, Guid token);
         //-------------------------------------------------------------------------
         //ödeme tiplerini çek
 

@@ -268,10 +268,10 @@ namespace GoogleAPI.API.Controllers
             return Ok(response);
         }
 
-        [HttpGet("otherPayments/{basketId}/{paymentDescription}")]
-        public async Task<ActionResult<List<CreditCardPayment_CommandResponse>>> OtherPayments( int basketId ,string paymentDescription)
+        [HttpGet("other-payments/{basketId}/{paymentDescription}/{token}")]
+        public async Task<ActionResult<List<CreditCardPayment_CommandResponse>>> OtherPayments(int basketId, string paymentDescription, Guid token)
         {
-            CreditCardPayment_CommandResponse response = await _iyzcoPaymentService.OtherPayments( basketId,paymentDescription);
+            CreditCardPayment_CommandResponse response = await _iyzcoPaymentService.OtherPayments( basketId,paymentDescription, token);
 
             return Ok(response);
         }

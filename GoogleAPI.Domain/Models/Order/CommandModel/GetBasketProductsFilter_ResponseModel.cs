@@ -15,5 +15,7 @@
 
         public decimal? NormalPrice { get; set; }
         public decimal? DiscountedPrice { get; set; }
+        public decimal? PriceOnSale { get; set; }
+        public decimal? DiscountedPriceOnSale { get; set; }
     }
 }

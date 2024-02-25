@@ -40,6 +40,7 @@ namespace GooleAPI.Application.Abstractions.IServices.IOrder
          Task<List<PaymentList_VM>> GetPaymentsOfOrderList(PaymentFilter request);
          Task<GetOrderDetail_ResponseModel> CheckIyzcoPaymentStatus(string conversationId);
         Task<GetOrderDetail_ResponseModel> CheckPaytrPaymentStatus(string conversationId,bool status);
+        Task<GetOrderDetail_ResponseModel> CheckOtherPaymentStatus(string token, bool status, int paymentMethodId, Guid orderNo);
 
     }
 }

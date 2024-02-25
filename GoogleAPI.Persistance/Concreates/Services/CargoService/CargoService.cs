@@ -82,6 +82,16 @@ namespace GoogleAPI.Persistance.Concreates.Services.CargoService
             return response;
         }
 
+        public async Task<CargoFirm> GetFirstCargo( )
+        {
+            CargoFirm? cargo = await _cr.Table.FirstOrDefaultAsync(cf=>cf.IsActive == true);
+            if (cargo == null)
+            {
+                throw new Exception("Aktif Kargo Yok");
+            }
+            return cargo;
+        }
+
         public async Task<bool> SetFirstCargoFirm(int cargoId)
         {
             CargoFirm _cargo = await _cr.GetByIdAsync(cargoId, false);
@@ -144,6 +154,8 @@ namespace GoogleAPI.Persistance.Concreates.Services.CargoService
             _cargo.isDifferentBarcode = cargo.isDifferentBarcode;
             _cargo.ApiKey = cargo.ApiKey;
             _cargo.ApiSecretKey = cargo.ApiSecretKey;
+
+            _cargo.StockCode = cargo.StockCode; 
 
             var response = await _cw.Update(_cargo);
             return response;

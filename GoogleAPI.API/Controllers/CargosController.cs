@@ -14,6 +14,7 @@ using Google.Apis.Drive.v3.Data;
 using Google.Apis.Upload;
 using GooleAPI.Application.Abstractions.IServices.FileUploadService;
 using System.Text.Json;
+using GoogleAPI.Domain.Models.File;
 
 
 
@@ -153,6 +154,15 @@ namespace GoogleAPI.API.Controllers
                 return Ok(false);
             }
         }
+
+        [HttpGet("get-first-cargo")]
+        public async Task<IActionResult> GetFirstCargo()
+        {
+            CargoFirm success = await _cargoService.GetFirstCargo();
+          
+                return Ok(success);
+          
+        }
         [HttpGet("update-cargo-firm-properties/{cargoFirmId}/{state}")]
         public async Task<IActionResult> UpdateCargoFirmProperties(int cargoFirmId, int state)
         {
@@ -162,18 +172,5 @@ namespace GoogleAPI.API.Controllers
         }
     }
 
-    public class UploadFileModel
-    {
-        public IFormFile File { get; set; }
-    }
-    public class UploadFilesModel
-    {
-        public List<IFormFile> Files { get; set; }
-    }
-
-    public class UploadFileResultModel
-    {
-        public string? Result { get; set; }
-        public string? Url { get; set; }
-    }
+    
 }

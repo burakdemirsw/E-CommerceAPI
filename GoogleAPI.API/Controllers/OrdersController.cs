@@ -14,6 +14,7 @@ using GooleAPI.Application.CustomAttributes;
 using GooleAPI.Application.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace GoogleAPI.API.Controllers
 {
@@ -374,6 +375,16 @@ namespace GoogleAPI.API.Controllers
             models.Add(response);   
             return Ok(models);
         }
+
+        [HttpGet("check-other-payment-status/{token}/{status}/{paymentMethodId}/{orderNo}")]
+        public async Task<ActionResult<List<GetOrderDetail_ResponseModel>>> CheckOtherPaymentStatus(string token, bool status, int paymentMethodId, Guid orderNo)
+        {
+            List<GetOrderDetail_ResponseModel> models = new List<GetOrderDetail_ResponseModel>();
+            GetOrderDetail_ResponseModel response = await _orderService.CheckOtherPaymentStatus(token, status, paymentMethodId, orderNo);
+            models.Add(response);
+            return Ok(models);
+        }
+
 
         [HttpGet("ReturnOk")]
         public  ActionResult ReturnOk ()

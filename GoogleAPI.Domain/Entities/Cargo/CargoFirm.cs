@@ -48,7 +48,7 @@ namespace GoogleAPI.Domain.Entities.Cargo
         public string? ApiKey { get; set; }
         public string? ApiSecretKey { get; set; }
 
-
+        public string? StockCode { get; set; }
 
 
     }

@@ -1,5 +1,6 @@
 ﻿
 using GoogleAPI.Domain.Entities;
+using GoogleAPI.Domain.Entities.Cargo;
 using GoogleAPI.Domain.Entities.PaymentEntities;
 using GoogleAPI.Domain.Entities.User;
 using GoogleAPI.Domain.Models;
@@ -160,6 +161,33 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 Basket? addedBasket = await _br.Table.FirstOrDefaultAsync(b => b.BaskedNo == basket.BaskedNo);
                 if (addedBasket != null)
                 {
+
+                    CargoFirm? cargoFirm = _context.CargoFirms.FirstOrDefault(cf => cf.IsActive == true);
+                    if (cargoFirm == null)
+                    {
+                        throw new Exception("Aktif Kargo Firması Bulunamadı");
+                    }
+                    List<Domain.Entities.BasketItem> basketItems = _context.BasketItems.Where(bi => bi.BasketId == addedBasket.Id).ToList();
+                    Domain.Entities.Product? cargoProduct = _context.Products.FirstOrDefault(p => p.StockCode == cargoFirm.StockCode);
+                    if (cargoFirm == null)
+                    {
+                        throw new Exception("Kargo Firması Ürünü Bulunamadı");
+                    }
+                    if (!basketItems.Any(bi => bi.ProductId == cargoProduct.Id))
+                    {
+                        Domain.Entities.BasketItem basketItem = new Domain.Entities.BasketItem();
+                        basketItem.ProductId = cargoProduct.Id;
+                        basketItem.BasketId = addedBasket.Id;
+                        ;
+                        basketItem.PriceOnSale = cargoFirm.SPC_Price;
+                        basketItem.CreatedDate = DateTime.Now;
+                        basketItem.UpdatedDate = DateTime.Now;
+                        _context.BasketItems.Add(basketItem);
+                        _context.SaveChanges();
+                    }
+
+
+
                     CreateBasketResponseModel responseModel = new();
                     responseModel.State = true;
                     responseModel.BasketId = basket.Id;
@@ -232,15 +260,26 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 orderList_VM.OrderPaymentStatus = _context.OrderPaymentStatuses.FirstOrDefault(os => os.Id == o.OrderPaymentStatusId)?.Description;
 
                 // TotalValue hesaplama işlemi
+                //decimal totalValue = (await (from bi in _context.BasketItems
+                //                             join b in _context.Baskets on bi.BasketId equals b.Id
+                //                             join p in _context.Products on bi.ProductId equals p.Id
+                //                             where b.Id == o.BasketId
+                //                             select new BasketItemList_VM
+                //                             {
+                //                                 Price = p.NormalPrice
+                //                             }).ToListAsync())
+                //                              .Sum(o => o.Price);
+
                 decimal totalValue = (await (from bi in _context.BasketItems
                                              join b in _context.Baskets on bi.BasketId equals b.Id
-                                             join p in _context.Products on bi.ProductId equals p.Id
+                                 
                                              where b.Id == o.BasketId
                                              select new BasketItemList_VM
                                              {
-                                                 Price = p.NormalPrice
+                                                 Price = bi.PriceOnSale
                                              }).ToListAsync())
-                                              .Sum(o => o.Price);
+                               .Sum(o => o.Price);
+
 
                 orderList_VM.TotalValue = totalValue;
 
@@ -306,7 +345,13 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
         public async Task<bool> ClearBasketItems(int basketId)
         {
             List<BasketItem>? basketItems = _context.BasketItems.Where(p => p.BasketId == basketId).ToList();
-
+            CargoFirm? cargoFirm = _context.CargoFirms.FirstOrDefault(cf => cf.IsActive == true);
+            if (cargoFirm == null)
+            {
+                throw new Exception("Aktif Kargo Firması Bulunamadı");
+            }
+            Domain.Entities.Product? cargoProduct = _context.Products.FirstOrDefault(p => p.StockCode == cargoFirm.StockCode);
+            basketItems = basketItems.Where(bi => bi.ProductId != cargoProduct.Id).ToList();
             if (basketItems != null && basketItems.Count > 0)
             {
                 foreach (var item in basketItems)
@@ -377,7 +422,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                 }
 
                 BasketItem? checkBasketItem = new BasketItem();
-                ;
+                
                 if (product != null)
                 {
 
@@ -388,19 +433,22 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                     checkBasketItem = _context.BasketItems.FirstOrDefault(b => b.BasketId == model.BasketId && b.ProductId == _product.Id);
                 }
 
-                if (checkBasketItem == null)
+                if (checkBasketItem == null)//SEPETE FARKLI ÜRÜN EKLENÜRSE
                 {
                     BasketItem basketItem = new BasketItem();
                     basketItem.ProductId = product == null ? _product.Id : product.Id;
                     basketItem.Quantity = model.Quantity;
                     basketItem.BasketId = model.BasketId;
                     basketItem.CreatedDate = DateTime.Now;
+                    basketItem.PriceOnSale = model.PriceOnSale;
+                    basketItem.DiscountedPriceOnSale = model.DiscountedPriceOnSale;
+
                     var response1 = await _biw.AddAsync(basketItem);
                     updateBasketItemCommandResponse.State = true;
                     updateBasketItemCommandResponse.BasketId = basketItem.BasketId;
                     //  return updateBasketItemCommandResponse;
                 }
-                else
+                else //SEPETE AYNI ÜRÜN EKLENÜRSE
                 {
                     checkBasketItem.Quantity += model.Quantity;
                     var response2 = await _biw.Update(checkBasketItem);
@@ -782,8 +830,9 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
                         where (request.PaymentId == 0 ?   p.Id > 0 : p.Id == request.PaymentId) &&
                               (request.BasketId == 0 ? b.Id > 0 : b.Id == request.BasketId) &&
                               (request.OrderId == 0 ? o.Id > 0 : o.Id == request.OrderId) &&
-                              (request.PaymentMethodId == 0 ? p.PaymentMethodId > 0 : p.PaymentMethodId == request.PaymentMethodId) &&
-                              p.Status == request.Status
+                              (request.PaymentMethodId == 0 ? p.PaymentMethodId > 0 : p.PaymentMethodId == request.PaymentMethodId)
+                              //&& p.Status == request.Status kaldırıldı 25.02
+
                         select new PaymentList_VM
                         {
                             Id = p.Id,
@@ -804,6 +853,23 @@ namespace GoogleAPI.Persistance.Concreates.Services.Order
 
         }
 
+        public async  Task<GetOrderDetail_ResponseModel> CheckOtherPaymentStatus(string token,bool status,int paymentMethodId, Guid orderNo)
+        {
+            Domain.Entities.Order? order = _context.Orders.FirstOrDefault(o => o.OrderNo == orderNo);
+            if (order == null)
+            {
+                throw new Exception("Sipariş Bulunamadı");
+            }
+            Payment? payment = _context.Payments.FirstOrDefault(p => p.PaymentToken == token);
+            if (payment == null)
+            {
+                throw new Exception("Ödeme Bulunamadı");
+            }
 
+            GetOrderDetail_ResponseModel model = await GetOrderDetail(order.BasketId);
+
+            return model;
+        
+        }
     }
 }

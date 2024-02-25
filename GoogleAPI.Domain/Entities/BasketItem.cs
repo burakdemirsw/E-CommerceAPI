@@ -11,5 +11,10 @@ namespace GoogleAPI.Domain.Entities
 
         public int? ProductId { get; set; }
         public Product Product { get; set; }
+
+        public decimal PriceOnSale { get; set; }
+        public decimal DiscountedPriceOnSale { get; set; }
+
+
     }
 }

@@ -4,6 +4,7 @@ using GoogleAPI.Persistance.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoogleAPI.Persistance.Migrations
 {
     [DbContext(typeof(GooleAPIDbContext))]
-    partial class GooleAPIDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240225121209_B25")]
+    partial class B25
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,9 +420,6 @@ namespace GoogleAPI.Persistance.Migrations
 
                     b.Property<decimal>("SPC_UpperPriceLimit")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("StockCode")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");

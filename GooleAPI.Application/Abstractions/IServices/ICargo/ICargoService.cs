@@ -17,6 +17,7 @@ namespace GooleAPI.Application.Abstractions.IServices.ICargo
         Task<CargoFirm> GetCargoFirmById(int cargoId);
         Task<bool> SetFirstCargoFirm(int cargoId);
         Task<bool> UpdateCargoFirmProperties(int cargoFirmId, int state);
+        Task<CargoFirm> GetFirstCargo();
     }
    
 }

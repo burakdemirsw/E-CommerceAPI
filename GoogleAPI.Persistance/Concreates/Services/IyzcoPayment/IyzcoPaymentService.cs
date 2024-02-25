@@ -1,5 +1,6 @@
 ﻿using FluentNHibernate.Mapping;
 using GoogleAPI.Domain.Entities.All_Settings;
+using GoogleAPI.Domain.Entities.Cargo;
 using GoogleAPI.Domain.Entities.PaymentEntities;
 using GoogleAPI.Domain.Models.Order.ResponseModel;
 using GoogleAPI.Domain.Models.Payment;
@@ -23,6 +24,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using static QRCoder.PayloadGenerator;
 using Payment = GoogleAPI.Domain.Entities.PaymentEntities.Payment;
 
 namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
@@ -568,29 +570,67 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
             }
         }
 
-        //  path: "payment-status/:status/:paymentValue/:paymentMethodId/:orderNo/:conversationId",
-        public async Task<CreditCardPayment_CommandResponse> OtherPayments(int basketId ,string paymentDescription) //1 havale ödeme //2 kapıda nakit //3 kapıda kredi
+        //  "payment-status/:paymentStatus/:paymentMethodId/:paymentTypeId/:orderNo/:token",
+        public async Task<CreditCardPayment_CommandResponse> OtherPayments(int basketId ,string paymentDescription,Guid token) 
         {
-                List<PaymentMethod> paymentMethods = await _c.PaymentMethods.ToListAsync();
+
+            List<PaymentMethod> paymentMethods = await _c.PaymentMethods.ToListAsync();
+            PaymentMethod? paymentMethod = paymentMethods.FirstOrDefault(pm => pm.Description == paymentDescription);
+            int? paymentMethodId = paymentMethod.Id;
+            if (paymentMethodId == null || paymentMethod == null)
+            {
+                throw new Exception("Ödeme Tipi yada Ödeme Metodu Bulunamadı (1)");
+
+            }
+
+            Domain.Entities.Order? order =_c.Orders.FirstOrDefault(o => o.BasketId == basketId);
+            if (order == null)
+            {
+                throw new Exception($"Sipariş Bulunamadı");
+            }
+            Payment? isAlreadyAddedPayment = _c.Payments.FirstOrDefault(p => p.PaymentToken == token.ToString());
+            if (isAlreadyAddedPayment != null)
+            {
+                throw new Exception($"Bu Token İle Daha Önce {paymentMethod.Description} Metodu Kullanılarak {order.Id} ID'li Siparişe Ödeme Eklendi");
+            }
+            //CargoFirm? cargoFirm = _c.CargoFirms.FirstOrDefault(cf => cf.IsActive==true);
+            //if (cargoFirm == null)
+            //{
+            //    throw new Exception("Aktif Kargo Firması Bulunamadı");
+            //}
+            //List<Domain.Entities.BasketItem> basketItems = _c.BasketItems.Where(bi => bi.BasketId == basketId).ToList();
+            //Domain.Entities.Product? cargoProduct = _c.Products.FirstOrDefault(p => p.StockCode == cargoFirm.StockCode);
+            //if (cargoFirm == null)
+            //{
+            //    throw new Exception("Kargo Firması Ürünü Bulunamadı");
+            //}
+            //if (!basketItems.Any(bi=>bi.ProductId == cargoProduct.Id))
+            //{
+            //    Domain.Entities.BasketItem basketItem = new Domain.Entities.BasketItem();
+            //    basketItem.ProductId = cargoProduct.Id;
+            //    basketItem.BasketId = basketId; ;
+            //    basketItem.PriceOnSale = cargoFirm.SPC_Price;
+            //    basketItem.CreatedDate = DateTime.Now;  
+            //    basketItem.UpdatedDate = DateTime.Now;
+            //    _c.BasketItems.Add(basketItem);
+            //    _c.SaveChanges();
+            //}
+
+
 
             GetOrderDetail_ResponseModel? orderDetail  = await _os.GetOrderDetail(basketId);
             if(orderDetail != null && paymentMethods != null)
             {
-                var token = Guid.NewGuid().ToString();
-                int? paymentMethodId = paymentMethods.FirstOrDefault(pm => pm.Description == paymentDescription)?.Id;
-                if (paymentMethodId == null)
-                {
-                    throw new Exception("Ödeme Tipi Bulunamadı (1)");
-
-                }
+                //var token = Guid.NewGuid().ToString();
+               
                 Payment payment = new Payment();
                 payment.PaymentMethodId = (int)(paymentMethodId == null ? 0 : paymentMethodId);
                 payment.Status = false;
                 payment.PaymentValue = orderDetail.OrderDetail.TotalValue;
                 payment.CreatedDate = DateTime.Now;
                 payment.UpdatedDate = DateTime.Now;
-                payment.PaymentToken = token;
-                payment.ConversationId = token;
+                payment.PaymentToken = token.ToString();
+                payment.ConversationId = token.ToString();
                 payment.OrderId = orderDetail.OrderDetail.Id;
 
 
@@ -599,7 +639,7 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
                 {
                     //sipariş durumlarını güncelle
 
-                    Domain.Entities.Order? order = await _c.Orders.FirstOrDefaultAsync(o => o.OrderNo == orderDetail.OrderDetail.OrderNo);
+                    //Domain.Entities.Order? order = await _c.Orders.FirstOrDefaultAsync(o => o.OrderNo == orderDetail.OrderDetail.OrderNo);
                     if (order != null)
                     {
                         if(paymentDescription == "Havale")
@@ -631,13 +671,33 @@ namespace GoogleAPI.Persistance.Concreates.Services.IyzcoPayment
                         {
                             throw new Exception("Ödeme Tipi Bulunamadı (2)");
                         }
-                      
+
+
+                        if (paymentDescription == "Havale")
+                        {
+                            CreditCardPayment_CommandResponse _response = new CreditCardPayment_CommandResponse();
+                            _response.PageUrl = $"http://localhost:4202/admin/product/payment-status/false/{paymentMethodId}/{orderDetail.OrderDetail.OrderNo}/{token}";
+                            return _response;
+
+                        }
+                        else if (paymentDescription == "Kapıda Ödeme Nakit")
+                        {
+                            CreditCardPayment_CommandResponse _response = new CreditCardPayment_CommandResponse();
+                            _response.PageUrl = $"http://localhost:4202/admin/product/payment-status/true/{paymentMethodId}/{orderDetail.OrderDetail.OrderNo}/{token}";
+                            return _response;
+                        }
+                        else if (paymentDescription == "Kapıda Ödeme Kredi Kartı")
+                        {
+                            CreditCardPayment_CommandResponse _response = new CreditCardPayment_CommandResponse();
+                            _response.PageUrl = $"http://localhost:4202/admin/product/payment-statu s/true/{paymentMethodId}/{orderDetail.OrderDetail.OrderNo}/{token}";
+                            return _response;
+                        }
+                        else
+                        {
+                            return null;
+                        }
                        
 
-                        CreditCardPayment_CommandResponse _response = new CreditCardPayment_CommandResponse();
-                        _response.PageUrl = $"http://localhost:4202/admin/product/false/{paymentMethodId}/{orderDetail.OrderDetail.OrderNo}/{token}";
-
-                        return _response;
                     }
                     else
                     {

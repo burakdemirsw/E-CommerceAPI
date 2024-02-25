@@ -1009,7 +1009,8 @@ namespace GooleAPI.Persistance.Services.ProductsService
                 NormalPrice = p.NormalPrice,
                 DiscountedPrice = p.DiscountedPrice,
                 ColorDescription = _c.Colors.FirstOrDefault(c => c.Id == p.ColorId)?.Description,
-                DimensionDescription = _c.Dimensions.FirstOrDefault(c => c.Id == p.DimensionId)?.Description
+                DimensionDescription = _c.Dimensions.FirstOrDefault(c => c.Id == p.DimensionId)?.Description,
+                
             }).ToList();
 
             return result;

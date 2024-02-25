@@ -20,5 +20,8 @@
         public int DimensionId { get; set; }
         public string StockCode { get; set; }
         public int UserId { get; set; }
+        public decimal PriceOnSale { get; set; }
+        public decimal DiscountedPriceOnSale { get; set; }
+
     }
 }
